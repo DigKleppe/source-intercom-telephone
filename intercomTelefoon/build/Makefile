@@ -13,7 +13,7 @@
 # PARTICULAR PURPOSE.
 
 
-VPATH = ..
+VPATH = /home/dig/nanoPiFire2A/repository/intercomTelephone/intercomTelefoon
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
     false; \
@@ -69,10 +69,10 @@ am__make_running_with_option = \
   test $$has_opt = yes
 am__make_dryrun = (target_option=n; $(am__make_running_with_option))
 am__make_keepgoing = (target_option=k; $(am__make_running_with_option))
-pkgdatadir = $(datadir)/telefoon
-pkgincludedir = $(includedir)/telefoon
-pkglibdir = $(libdir)/telefoon
-pkglibexecdir = $(libexecdir)/telefoon
+pkgdatadir = $(datadir)/intercomtelephone
+pkgincludedir = $(includedir)/intercomtelephone
+pkglibdir = $(libdir)/intercomtelephone
+pkglibexecdir = $(libexecdir)/intercomtelephone
 am__cd = CDPATH="$${ZSH_VERSION+.}$(PATH_SEPARATOR)" && cd
 install_sh_DATA = $(install_sh) -c -m 644
 install_sh_PROGRAM = $(install_sh) -c
@@ -201,19 +201,19 @@ distuninstallcheck_listfiles = find . -type f -print
 am__distuninstallcheck_listfiles = $(distuninstallcheck_listfiles) \
   | sed 's|^\./|$(prefix)/|' | grep -v '$(infodir)/dir$$'
 distcleancheck_listfiles = find . -type f -print
-ACLOCAL = ${SHELL} /home/dig/nanoPiFire2A/eclipseWorkspace/repository/telefoon/intercomTelefoon/missing aclocal-1.15
+ACLOCAL = ${SHELL} /home/dig/nanoPiFire2A/repository/intercomTelephone/intercomTelefoon/missing aclocal-1.15
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 1
-AUTOCONF = ${SHELL} /home/dig/nanoPiFire2A/eclipseWorkspace/repository/telefoon/intercomTelefoon/missing autoconf
-AUTOHEADER = ${SHELL} /home/dig/nanoPiFire2A/eclipseWorkspace/repository/telefoon/intercomTelefoon/missing autoheader
-AUTOMAKE = ${SHELL} /home/dig/nanoPiFire2A/eclipseWorkspace/repository/telefoon/intercomTelefoon/missing automake-1.15
+AUTOCONF = ${SHELL} /home/dig/nanoPiFire2A/repository/intercomTelephone/intercomTelefoon/missing autoconf
+AUTOHEADER = ${SHELL} /home/dig/nanoPiFire2A/repository/intercomTelephone/intercomTelefoon/missing autoheader
+AUTOMAKE = ${SHELL} /home/dig/nanoPiFire2A/repository/intercomTelephone/intercomTelefoon/missing automake-1.15
 AWK = gawk
 CC = arm-none-linux-gnueabihf-gcc
 CCDEPMODE = depmode=gcc3
-CFLAGS =  -std=c11
+CFLAGS = -g -O2
 CPPFLAGS = 
 CYGPATH_W = echo
-DEFS = -DPACKAGE_NAME=\"telefoon\" -DPACKAGE_TARNAME=\"telefoon\" -DPACKAGE_VERSION=\"1.0\" -DPACKAGE_STRING=\"telefoon\ 1.0\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DPACKAGE=\"telefoon\" -DVERSION=\"1.0\"
+DEFS = -DPACKAGE_NAME=\"intercomTelephone\" -DPACKAGE_TARNAME=\"intercomtelephone\" -DPACKAGE_VERSION=\"1.0\" -DPACKAGE_STRING=\"intercomTelephone\ 1.0\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DPACKAGE=\"intercomtelephone\" -DVERSION=\"1.0\"
 DEPDIR = .deps
 ECHO_C = 
 ECHO_N = -n
@@ -228,14 +228,14 @@ LDFLAGS =
 LIBOBJS = 
 LIBS = 
 LTLIBOBJS = 
-MAKEINFO = ${SHELL} /home/dig/nanoPiFire2A/eclipseWorkspace/repository/telefoon/intercomTelefoon/missing makeinfo
+MAKEINFO = ${SHELL} /home/dig/nanoPiFire2A/repository/intercomTelephone/intercomTelefoon/missing makeinfo
 MKDIR_P = /bin/mkdir -p
 OBJEXT = o
-PACKAGE = telefoon
+PACKAGE = intercomtelephone
 PACKAGE_BUGREPORT = 
-PACKAGE_NAME = telefoon
-PACKAGE_STRING = telefoon 1.0
-PACKAGE_TARNAME = telefoon
+PACKAGE_NAME = intercomTelephone
+PACKAGE_STRING = intercomTelephone 1.0
+PACKAGE_TARNAME = intercomtelephone
 PACKAGE_URL = 
 PACKAGE_VERSION = 1.0
 PATH_SEPARATOR = :
@@ -243,10 +243,10 @@ SET_MAKE =
 SHELL = /bin/bash
 STRIP = arm-none-linux-gnueabihf-strip
 VERSION = 1.0
-abs_builddir = /home/dig/nanoPiFire2A/eclipseWorkspace/repository/telefoon/intercomTelefoon/build
-abs_srcdir = /home/dig/nanoPiFire2A/eclipseWorkspace/repository/telefoon/intercomTelefoon/build/..
-abs_top_builddir = /home/dig/nanoPiFire2A/eclipseWorkspace/repository/telefoon/intercomTelefoon/build
-abs_top_srcdir = /home/dig/nanoPiFire2A/eclipseWorkspace/repository/telefoon/intercomTelefoon/build/..
+abs_builddir = /home/dig/nanoPiFire2A/repository/intercomTelephone/intercomTelefoon/build
+abs_srcdir = /home/dig/nanoPiFire2A/repository/intercomTelephone/intercomTelefoon
+abs_top_builddir = /home/dig/nanoPiFire2A/repository/intercomTelephone/intercomTelefoon/build
+abs_top_srcdir = /home/dig/nanoPiFire2A/repository/intercomTelephone/intercomTelefoon
 ac_ct_CC = 
 am__include = include
 am__leading_dot = .
@@ -273,7 +273,7 @@ host_vendor = none
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /home/dig/nanoPiFire2A/eclipseWorkspace/repository/telefoon/intercomTelefoon/install-sh
+install_sh = ${SHELL} /home/dig/nanoPiFire2A/repository/intercomTelephone/intercomTelefoon/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
@@ -288,7 +288,7 @@ psdir = ${docdir}
 runstatedir = ${localstatedir}/run
 sbindir = ${exec_prefix}/sbin
 sharedstatedir = ${prefix}/com
-srcdir = ..
+srcdir = /home/dig/nanoPiFire2A/repository/intercomTelephone/intercomTelefoon
 sysconfdir = ${prefix}/etc
 target = arm-none-linux-gnueabihf
 target_alias = 
@@ -297,7 +297,7 @@ target_os = linux-gnueabihf
 target_vendor = none
 top_build_prefix = 
 top_builddir = .
-top_srcdir = ..
+top_srcdir = /home/dig/nanoPiFire2A/repository/intercomTelephone/intercomTelefoon
 SUBDIRS = src
 all: all-recursive
 

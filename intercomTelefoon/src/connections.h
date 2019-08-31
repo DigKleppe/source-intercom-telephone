@@ -12,4 +12,7 @@
 void startConnectionThreads( void);
 extern uint32_t connectCntrBaseFloor, connectCntrFirstFloor;  // connections to doorstations
 
+void UDPSend( floor_t);
+void UDPsendMessage (char * message );
+
 #endif /* CONNECTIONS_H_ */

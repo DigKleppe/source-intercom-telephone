@@ -7,6 +7,7 @@
 
 #include "telefoon.h"
 #include "keys.h"
+#include "timerThread.h"
 
 #include <stdio.h>
 #include <string.h>	//strlen
@@ -24,6 +25,7 @@
 #include <openssl/md5.h>
 
 bool reboot;
+
 
 unsigned char receivedMd5sum[MD5_DIGEST_LENGTH];
 unsigned char calculatedMd5sum[MD5_DIGEST_LENGTH];
@@ -56,13 +58,13 @@ int getmd5(char * fileName) {
 	if(file_descript < 0) exit(-1);
 
 	fileLen = get_size_by_fd(file_descript);
-//	printf("file size:\t%lu\n", file_size);
+	//	printf("file size:\t%lu\n", file_size);
 
 	file_buffer = mmap(0, fileLen, PROT_READ, MAP_SHARED, file_descript, 0);
 	MD5((unsigned char*) file_buffer, fileLen, calculatedMd5sum);
 	munmap(file_buffer, fileLen);
 
-//	print_md5_sum(result);
+	//	print_md5_sum(result);
 
 	return 0;
 }
@@ -81,7 +83,7 @@ int charpos( char *p, char ch){
 
 FILE * openUpdateFile (){
 	FILE *fptr;
-	fptr = fopen("tempFile","w");
+	fptr = fopen("/root/tempFile","w");
 	return fptr;
 }
 
@@ -95,14 +97,16 @@ bool appendUpdateFile(FILE * fptr, char * receiveBuf, int count) {
 
 bool closeUpdateFile(FILE * fptr, char * newFileName) {
 	fclose (fptr);
-	getmd5("tempFile");
+	getmd5("/root/tempFile");
 	if (memcmp(calculatedMd5sum, receivedMd5sum, sizeof(receivedMd5sum)) == 0) {
 		printf(" md5 ok\n");
-	//	return rename( "tempFile" , newFileName);
+		//	return rename( "tempFile" , newFileName);
 		remove( newFileName);
-		rename( "tempFile" , newFileName);  // todo check file
-		if (strcmp( newFileName, "telefoon") == 0) {
-			 system("chmod +x telefoon");
+		rename( "/root/tempFile" , newFileName);
+		system("sync");
+
+		if (strcmp( newFileName, "/root/telefoon") == 0) {
+			system("chmod +x /root/telefoon");
 		}
 		return 0;
 	}
@@ -113,6 +117,7 @@ bool closeUpdateFile(FILE * fptr, char * newFileName) {
 
 }
 
+typedef enum { ERR_NONE, ERR_SOCK, ERR_FILE, ERR_FILELEN,  ERR_MD5 , ERR_BLOCK ,ERR_TIMEOUT } errUpdate_t;
 
 // receives update messages from base station 100
 
@@ -127,6 +132,7 @@ void* updateServerThread (void* args) {
 	int state = 0;
 	FILE * fptr= NULL;
 	char newFileName[100];
+	char newFileNameBuf[50];
 	uint32_t fileLen;
 	uint32_t md5sum;
 	uint32_t receivedLen;
@@ -135,17 +141,18 @@ void* updateServerThread (void* args) {
 
 	char *buf;
 	int buflen;
-	bool err = false;
+	errUpdate_t err;
 	bool stop = false;
 	bool updateError;
 	int opt = 1;
+	int blocks = 0;
 
 	struct timeval receiving_timeout;
 	receiving_timeout.tv_sec = 5;
 	receiving_timeout.tv_usec = 0;
 
 	while (!stop) {
-		err = false;
+		err = ERR_NONE;
 		memset(&sa, 0, sizeof(struct sockaddr_in));
 		sa.sin_family = AF_INET;
 		sa.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -154,7 +161,7 @@ void* updateServerThread (void* args) {
 		socket_fd = socket(PF_INET, SOCK_STREAM, 0);
 		if (socket_fd < 0) {
 			printf("socket call failed\n");
-			err = true;
+			err = ERR_SOCK;
 		}
 		if (!err) {
 			if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT,&opt, sizeof(opt)))
@@ -163,7 +170,7 @@ void* updateServerThread (void* args) {
 			}
 			if (bind(socket_fd, (struct sockaddr *) &sa, sizeof(sa)) == -1) {
 				perror("Bind to Port failed\n");
-				err = true;
+				err = ERR_SOCK;
 			}
 		}
 		if (!err) {
@@ -176,58 +183,89 @@ void* updateServerThread (void* args) {
 
 			if (accept_fd < 0) {
 				printf("accept failed\n");
-				err = true;
+				err = ERR_SOCK;
 			}
 			else {
 				//	printf("Update accepted State:%d\n", state);
-				//	setsockopt(accept_fd, SOL_SOCKET, SO_RCVTIMEO, &receiving_timeout, sizeof(receiving_timeout));
+				setsockopt(accept_fd, SOL_SOCKET, SO_RCVTIMEO, &receiving_timeout, sizeof(receiving_timeout));
 				count = recv(accept_fd, (uint8_t *) &receiveBuf, sizeof(receiveBuf), 0);
-				printf("rec %d, %d\n",count, state);
-
+				//	printf("rec %d, %d\n",count, state);
+				printf(".");
 				switch (state){  // first frame contents: "fileName=/nnnnnn/cccc" or "reboot"
 				case 0:
 					if ( (count > 3) && ( count < 100 )) {  // no response empty frame
-						if( sscanf ( receiveBuf,"fileName=%[^;]s",newFileName) == 1) {
-							printf("%s\n",receiveBuf);
+						if( sscanf ( receiveBuf,"fileName=%[^;]s",newFileNameBuf) == 1) {
+							printf("%s\n",newFileNameBuf);
+							strcpy( newFileName, "/root/");
+							strcat (newFileName,newFileNameBuf);
 							receivedLen = 0;
+							blocks = 0;
 							cp = strstr(receiveBuf,";len=");
 							if ( sscanf ( cp,";len=%d;", &fileLen) == 1){
 								cp = strstr(receiveBuf,"md5=") + strlen( "md5=");
 								memcpy (receivedMd5sum, cp, sizeof (receivedMd5sum));
+								printf("MD5: %x  len:%d \n",receivedMd5sum,fileLen);
 
 								fptr = openUpdateFile(); // make temporary file
-								if (fptr)
+								if (fptr) {
 									state++;
+									updateTimeoutTimer = UPDATE_TIMEOUT; // seconds
+								}
 								else {
-									err = true;
+									err = ERR_FILE;
 									printf("updata err temp file\n");
 								}
 							}
 						}
-						if( strncmp ( receiveBuf,"reboot", strlen("reboot") )== 0){
-							printf("%s\n",receiveBuf);
-							if ( !updateError) {  // reboot if update succeeded
-								reboot = true;
-								stop = true;
-							}
-						}
-						if( strncmp ( receiveBuf,"ready", strlen("ready") )== 0){ // not used
-							printf("%s\n",receiveBuf);
-							stop = true;
-						}
 					}
 					break;
 				case 1:
-					receivedLen += count;
-					if ( count > 0 )
-						appendUpdateFile(fptr, receiveBuf, count);
-					if (receivedLen >= fileLen || count == 0 ) { // socket closed
-						updateError = closeUpdateFile(fptr, newFileName); // check temproary file and rename if ok
+					if (updateTimeoutTimer == 0 ){
+						printf("update timeout\n");
 						state = 0;
+						err = ERR_TIMEOUT;
+					}
+					else {
+						receivedLen += count;
+						if (receivedLen > fileLen)
+							err = ERR_FILELEN;
+						else {
+							if ( count > 0 ){
+								appendUpdateFile(fptr, receiveBuf, count);
+								blocks++;
+							}
+							else { // socket closed , end of file
+								updateError = closeUpdateFile(fptr, newFileName); // check temporary file and rename if ok
+								fptr = NULL;
+								if (!updateError) {
+									reboot = true;
+									stop = true;
+								}
+								else {
+									printf( " error MD5 len:%d blocks:%d\n",receivedLen, blocks);
+									err = ERR_MD5;
+								}
+								state = 0;
+							}
+						}
 					}
 					break;
 				}
-				sprintf(receiveBuf,"OK %d\n",count );
+				if( err > ERR_NONE  ){
+					sprintf(receiveBuf,"Error %d", err);
+					printf("Error %d\n", err);
+				}
+				else {
+					if ( blocks == 0)
+						sprintf(receiveBuf,"Update go");  // accept update
+					else {
+						if ( !reboot )
+							sprintf(receiveBuf,"OK %d\n",blocks );
+						else
+							sprintf(receiveBuf,"Success");
+					}
+
+				}
 				send(accept_fd , receiveBuf , strlen (receiveBuf) , 0 );
 				close(accept_fd);
 			}
@@ -240,7 +278,13 @@ void* updateServerThread (void* args) {
 			}
 		}
 	}
-	pThreadStatus->isRunning = false;
+
+	if ( reboot) {
+		sleep(1);
+		exit(EXIT_SUCCESS);  // reboot thru calling script (Q&D)
+	}
+
+	pThreadStatus->run = false;
 	pthread_exit(args);
 	return ( NULL);
 }

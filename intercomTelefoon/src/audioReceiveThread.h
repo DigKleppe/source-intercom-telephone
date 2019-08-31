@@ -8,7 +8,8 @@
 #ifndef AUDIORECEIVETHREAD_H_
 #define AUDIORECEIVETHREAD_H_
 
-void* audioReceiveThread(void* args);
-
+bool setAudioReceiveTask ( streamerTask_t task, int UDPport , int SoundCardNo);
+bool audioPipeLineIsStopped ( void);
+streamerTask_t getAudioReceiveTask();
 
 #endif /* AUDIORECEIVETHREAD_H_ */

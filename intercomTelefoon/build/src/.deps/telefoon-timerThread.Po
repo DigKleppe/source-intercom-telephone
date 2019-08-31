@@ -1,71 +1,137 @@
 telefoon-timerThread.o: \
- /home/dig/nanoPiFire2A/eclipseWorkspace/repository/telefoon/intercomTelefoon/src/timerThread.c \
- /usr/include/stdc-predef.h \
- /home/dig/nanoPiFire2A/eclipseWorkspace/repository/telefoon/intercomTelefoon/src/telefoon.h \
- /usr/lib/gcc/x86_64-linux-gnu/7/include/stdbool.h \
- /usr/lib/gcc/x86_64-linux-gnu/7/include/stdint.h /usr/include/stdint.h \
- /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
- /usr/include/features.h /usr/include/x86_64-linux-gnu/sys/cdefs.h \
- /usr/include/x86_64-linux-gnu/bits/wordsize.h \
- /usr/include/x86_64-linux-gnu/bits/long-double.h \
- /usr/include/x86_64-linux-gnu/gnu/stubs.h \
- /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
- /usr/include/x86_64-linux-gnu/bits/types.h \
- /usr/include/x86_64-linux-gnu/bits/typesizes.h \
- /usr/include/x86_64-linux-gnu/bits/wchar.h \
- /usr/include/x86_64-linux-gnu/bits/stdint-intn.h \
- /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h /usr/include/unistd.h \
- /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
- /usr/include/x86_64-linux-gnu/bits/environments.h \
- /usr/lib/gcc/x86_64-linux-gnu/7/include/stddef.h \
- /usr/include/x86_64-linux-gnu/bits/confname.h \
- /usr/include/x86_64-linux-gnu/bits/getopt_posix.h \
- /usr/include/x86_64-linux-gnu/bits/getopt_core.h
+ /home/dig/nanoPiFire2A/repository/intercomTelephone/intercomTelefoon/src/timerThread.c \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/stdc-predef.h \
+ /home/dig/nanoPiFire2A/repository/intercomTelephone/intercomTelefoon/src/telefoon.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/lib/gcc/arm-cortexa9-linux-gnueabihf/4.9.3/include/stdbool.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/lib/gcc/arm-cortexa9-linux-gnueabihf/4.9.3/include/stdint.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/stdint.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/features.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/sys/cdefs.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/wordsize.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/gnu/stubs.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/gnu/stubs-hard.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/wchar.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/unistd.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/posix_opt.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/environments.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/types.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/typesizes.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/lib/gcc/arm-cortexa9-linux-gnueabihf/4.9.3/include/stddef.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/confname.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/getopt.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/stdlib.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/waitflags.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/waitstatus.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/endian.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/endian.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/byteswap.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/byteswap-16.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/sys/types.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/time.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/sys/select.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/select.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/sigset.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/time.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/sys/sysmacros.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/pthreadtypes.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/alloca.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/stdlib-bsearch.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/stdlib-float.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/stdio.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/libio.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/_G_config.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/wchar.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/lib/gcc/arm-cortexa9-linux-gnueabihf/4.9.3/include/stdarg.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/stdio_lim.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/sys_errlist.h \
+ /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/stdio.h
 
-/usr/include/stdc-predef.h:
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/stdc-predef.h:
 
-/home/dig/nanoPiFire2A/eclipseWorkspace/repository/telefoon/intercomTelefoon/src/telefoon.h:
+/home/dig/nanoPiFire2A/repository/intercomTelephone/intercomTelefoon/src/telefoon.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/7/include/stdbool.h:
+/home/dig/nanoPiFire2A/tools/4.9.3/lib/gcc/arm-cortexa9-linux-gnueabihf/4.9.3/include/stdbool.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/7/include/stdint.h:
+/home/dig/nanoPiFire2A/tools/4.9.3/lib/gcc/arm-cortexa9-linux-gnueabihf/4.9.3/include/stdint.h:
 
-/usr/include/stdint.h:
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/stdint.h:
 
-/usr/include/x86_64-linux-gnu/bits/libc-header-start.h:
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/features.h:
 
-/usr/include/features.h:
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/sys/cdefs.h:
 
-/usr/include/x86_64-linux-gnu/sys/cdefs.h:
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/wordsize.h:
 
-/usr/include/x86_64-linux-gnu/bits/wordsize.h:
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/gnu/stubs.h:
 
-/usr/include/x86_64-linux-gnu/bits/long-double.h:
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/gnu/stubs-hard.h:
 
-/usr/include/x86_64-linux-gnu/gnu/stubs.h:
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/wchar.h:
 
-/usr/include/x86_64-linux-gnu/gnu/stubs-64.h:
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/unistd.h:
 
-/usr/include/x86_64-linux-gnu/bits/types.h:
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/posix_opt.h:
 
-/usr/include/x86_64-linux-gnu/bits/typesizes.h:
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/environments.h:
 
-/usr/include/x86_64-linux-gnu/bits/wchar.h:
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/types.h:
 
-/usr/include/x86_64-linux-gnu/bits/stdint-intn.h:
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/typesizes.h:
 
-/usr/include/x86_64-linux-gnu/bits/stdint-uintn.h:
+/home/dig/nanoPiFire2A/tools/4.9.3/lib/gcc/arm-cortexa9-linux-gnueabihf/4.9.3/include/stddef.h:
 
-/usr/include/unistd.h:
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/confname.h:
 
-/usr/include/x86_64-linux-gnu/bits/posix_opt.h:
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/getopt.h:
 
-/usr/include/x86_64-linux-gnu/bits/environments.h:
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/stdlib.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/7/include/stddef.h:
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/waitflags.h:
 
-/usr/include/x86_64-linux-gnu/bits/confname.h:
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/waitstatus.h:
 
-/usr/include/x86_64-linux-gnu/bits/getopt_posix.h:
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/endian.h:
 
-/usr/include/x86_64-linux-gnu/bits/getopt_core.h:
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/endian.h:
+
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/byteswap.h:
+
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/byteswap-16.h:
+
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/sys/types.h:
+
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/time.h:
+
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/sys/select.h:
+
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/select.h:
+
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/sigset.h:
+
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/time.h:
+
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/sys/sysmacros.h:
+
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/pthreadtypes.h:
+
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/alloca.h:
+
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/stdlib-bsearch.h:
+
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/stdlib-float.h:
+
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/stdio.h:
+
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/libio.h:
+
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/_G_config.h:
+
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/wchar.h:
+
+/home/dig/nanoPiFire2A/tools/4.9.3/lib/gcc/arm-cortexa9-linux-gnueabihf/4.9.3/include/stdarg.h:
+
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/stdio_lim.h:
+
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/sys_errlist.h:
+
+/home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/usr/include/bits/stdio.h:

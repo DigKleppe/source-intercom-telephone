@@ -13,8 +13,14 @@
 void* videoThread(void* args);
 void* messageThread(void* args);
 
+
 gboolean link_elements_with_filter (GstElement *element1, GstElement *element2, GstCaps *caps);
 
+
+bool setVideoTask( streamerTask_t task, int UDPport, char * pText);
+streamerTask_t getVideoTask();
+bool setVideoText ( char * newText);
+bool videoIsStopped ( void);
 
 typedef enum {
   GST_VIDEO_FLIP_METHOD_IDENTITY,

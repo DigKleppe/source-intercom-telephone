@@ -33,6 +33,6 @@
 void initIo();
 int getSwitches( void );
 int writeIntValueToFile(char* fileName, int value);
-
+int writeValueToFile(char* fileName, char* buff);
 
 #endif /* IO_H_ */

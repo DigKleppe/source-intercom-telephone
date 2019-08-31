@@ -7,6 +7,7 @@
 
 #include "telefoon.h"
 #include "keys.h"
+#include "timerThread.h"
 
 #include <pthread.h>
 #include <stdio.h>
@@ -23,102 +24,144 @@ int IDerrCntr;
 int connectCntrBaseFloor,connectCntrFirstFloor;
 int servConnectCtr1, servConnectCtr2;
 
-// alive message to base floor station
-//
-//
-void* clientThread(void* args) {
+
+
+
+// sends to monitor messages
+
+void UDPsendMessage (char * message ) {
+	int sock = 0;
+	struct sockaddr_in serv_addr,cliaddr;
+
+	if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0)   // udp
+		printf("\n Socket creation error \n");
+	else {
+		memset(&serv_addr, '0', sizeof(serv_addr));
+
+		serv_addr.sin_family = AF_INET;
+		//	serv_addr.sin_addr.s_addr = INADDR_ANY;
+		inet_pton(AF_INET, "192.168.2.6", &serv_addr.sin_addr.s_addr);
+		serv_addr.sin_port = htons(MONITORTELEPHONESPORT);
+
+		sendto(sock, (uint8_t *) message, strlen(message), MSG_CONFIRM, (const struct sockaddr *) &serv_addr,
+				sizeof(serv_addr));
+		close ( sock );
+	}
+}
+
+
+// keepalive slow
+
+void* UDPclientThread (void* args) {
 	struct sockaddr_in address;
 	int sock = 0, valread;
 	struct sockaddr_in serv_addr;
 	char buffer[1024] = {0};
 	int written;
+	bool checkBaseFloor = false;
+	int n, len;
 
 	while (1) {
-
-		if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)  // tcp
-		{
+		if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0)  // udp
 			printf("\n Socket creation error \n");
-		}
 
 		memset(&serv_addr, '0', sizeof(serv_addr));
 
 		serv_addr.sin_family = AF_INET;
-		serv_addr.sin_port = htons(CHATPORT);
+		serv_addr.sin_port = htons(UDPCHATPORT);
+		inet_pton(AF_INET, IPADDRESS_BASEFLOOR, &serv_addr.sin_addr);
 
-		if(inet_pton(AF_INET, IPADDRESS_BASEFLOOR, &serv_addr.sin_addr)<=0)
-			printf("\nInvalid address/ Address not supported \n");
+		sendto(sock, (uint8_t *) &transmitData, sizeof(transmitData), MSG_CONFIRM, (const struct sockaddr *) &serv_addr,
+				sizeof(serv_addr));
+		close(sock);
 
-		if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
-		{
-			//	printf("\nConnection Failed \n");
-			connectCntrBaseFloor = 0;
-		}
-		else {
-			written = write(sock ,  (uint8_t *) &transmitData , sizeof (transmitData));
+		if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0)  // udp
+			printf("\n Socket creation error \n");
 
-			//send(sock , buffer , strlen(buffer) , 0 );
-			//	printf("keepalive message sent to base floor %d\n",connectCntr1);
-			//	valread = read( sock , buffer, 1024);  //
-			//	printf("%s\n",buffer );
-			connectCntrBaseFloor++;
-		}
-		// connect to first floor
-		if(inet_pton(AF_INET, IPADDRESS_FIRSTFLOOR, &serv_addr.sin_addr)<=0)
-			printf("\nInvalid address/ Address not supported \n");
+		memset(&serv_addr, '0', sizeof(serv_addr));
 
-		if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
-		{
-			//	printf("\nConnection Failed \n");
-			connectCntrFirstFloor = 0;
-		}
-		else {
-		//	sprintf( buffer,"%d,%d" , houseNo, keysRT );
-			written = write(sock ,  (uint8_t *) &transmitData , sizeof (transmitData));
-		//	sprintf( buffer,"%d,%d" , houseNo, keysRT );
-		//	send(sock , buffer , strlen(buffer) , 0 );
-			//	printf("keepalive message sent to first floor %d\n",connectCntr2);
-			//	valread = read( sock , buffer, 1024);  //
-			//	printf("%s\n",buffer );
-			connectCntrFirstFloor++;
-		}
+		serv_addr.sin_family = AF_INET;
+		serv_addr.sin_port = htons(UDPCHATPORT);
+		inet_pton(AF_INET, IPADDRESS_FIRSTFLOOR, &serv_addr.sin_addr);
 
-		close (sock);
-		usleep(CHATINTERVAL * 1000);
+		sendto(sock, (uint8_t *) &transmitData, sizeof(transmitData), MSG_CONFIRM, (const struct sockaddr *) &serv_addr,
+				sizeof(serv_addr));
+
+		close(sock);
+
+		usleep(100 * 1000);
+
 	}
 	return 0;
 }
 
-// receives (bell) messages from base stations
+// sends transmitdata on UDPCHATPORT2
+
+void UDPSend (floor_t  floor) {
+	struct sockaddr_in address;
+	int sock = 0, valread;
+	struct sockaddr_in serv_addr;
+	char buffer[1024] = {0};
+	int written;
+	bool checkBaseFloor = false;
+	// sends to monitor messages
+
+	if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {  // udp
+		printf("\n Socket creation error \n");
+		return;
+	}
+
+	memset(&serv_addr, '0', sizeof(serv_addr));
+
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_port = htons(UDPCHATPORT2);
+
+	if ( floor == BASE_FLOOR) {
+		inet_pton(AF_INET, IPADDRESS_BASEFLOOR, &serv_addr.sin_addr);
+		transmitData.echoedCommand = receiveDataBaseFloor.command;  //echo back
+	}
+	else {
+		inet_pton(AF_INET, IPADDRESS_FIRSTFLOOR, &serv_addr.sin_addr);
+		transmitData.echoedCommand = receiveDataFirstFloor.command;
+	}
+
+	transmitData.seqNo++;
+	sendto(sock, (uint8_t *) &transmitData, sizeof(transmitData), MSG_CONFIRM, (const struct sockaddr *) &serv_addr,
+			sizeof(serv_addr));
+	close(sock);
+}
 
 
-void* serverThread (void* args) {
+void * UDPKeepAliveServerThread ( void * args) {
+
 	int socket_fd = 0, accept_fd = 0;
 	uint32_t addr_size, sent_data;
 	int count;
 	threadStatus_t  * pThreadStatus = args;
-	char receiveBuf[1024];
-	struct sockaddr_in sa, isa;
+	receiveData_t receiveData;
+
+	struct sockaddr_in sa, cliaddr;
 	int stationID;
-	int written;
 
 	char *buf;
 	int buflen;
 	bool err = false;
 	int opt = 1;
 
-	struct timeval receiving_timeout;
-	receiving_timeout.tv_sec = 5;
-	receiving_timeout.tv_usec = 0;
+	pThreadStatus = args;
+	opt = 1;
 
 	while (1) {
 		err = false;
 
 		memset(&sa, 0, sizeof(struct sockaddr_in));
+		memset(&cliaddr, 0, sizeof(struct sockaddr_in));
+
 		sa.sin_family = AF_INET;
 		sa.sin_addr.s_addr = htonl(INADDR_ANY);
-		sa.sin_port = htons(COMMANDPORT);
+		sa.sin_port = htons(UDPKEEPALIVEPORT);
 
-		socket_fd = socket(PF_INET, SOCK_STREAM, 0);
+		socket_fd = socket(PF_INET, SOCK_DGRAM,0);
 		if (socket_fd < 0) {
 			printf("socket call failed\n");
 			err = true;
@@ -134,36 +177,103 @@ void* serverThread (void* args) {
 			}
 		}
 		if (!err) {
-			listen(socket_fd, 5);
-		//	setsockopt(socket_fd, SOL_SOCKET, SO_RCVTIMEO, &receiving_timeout,sizeof(receiving_timeout));
+			int len = sizeof(cliaddr);
+			int n;
+			n = recvfrom(socket_fd,  (uint8_t *)&receiveData , sizeof(receiveData), MSG_WAITALL, ( struct sockaddr *) &cliaddr,  &len);
 
-			addr_size = sizeof(isa);
-			accept_fd = accept(socket_fd, (struct sockaddr* ) &isa, &addr_size);
-
-			stationID = (inet_lnaof (isa.sin_addr) -100 ); // = low byte address
-
-			if (accept_fd < 0) {
-				printf("accept failed\n");
-				err = true;
-			}
-			else {
-				///	printf("accepted\n");
-				setsockopt(accept_fd, SOL_SOCKET, SO_RCVTIMEO, &receiving_timeout, sizeof(receiving_timeout));
-				if ( stationID== 0) // base floor
-					count = recv(accept_fd, (uint8_t *) &receiveDataBaseFloor, sizeof(receiveData_t), 0);
-				else
-					count = recv(accept_fd, (uint8_t *) &receiveDataFirstFloor, sizeof(receiveData_t), 0);
-		//		printf("rec: %d , %d\n",count,servConnectCtr1 );
-				written = write(accept_fd ,  (uint8_t *) &transmitData , sizeof (transmitData));
-				close(accept_fd);
+			if ( n > 0) {
+				stationID = (inet_lnaof (cliaddr.sin_addr) -100 ); // = low byte address
+				if ( stationID== 0) { // base floor
+					connectCntrBaseFloor++;
+				}
+				else {
+					connectCntrFirstFloor++;
+				}
 			}
 		}
 		close(socket_fd);
-
-		if( err)
-			usleep(100000);
 	}
-	pThreadStatus->isRunning = false;
+	pThreadStatus->run = false;
+	pthread_exit(args);
+	return ( NULL);
+}
+
+// reads receivedata on UDPCHATPORT
+
+void * UDPserverThread ( void * args) {
+
+	int socket_fd = 0, accept_fd = 0;
+	uint32_t addr_size, sent_data;
+	int count;
+	threadStatus_t  * pThreadStatus = args;
+	receiveData_t receiveData;
+
+	//	char receiveBuf[1024];
+	struct sockaddr_in sa, cliaddr;
+	int stationID;
+
+	char *buf;
+	int buflen;
+	bool err = false;
+	int opt = 1;
+
+	pThreadStatus = args;
+	opt = 1;
+
+	struct timeval receiving_timeout;
+	receiving_timeout.tv_sec = 2;
+	receiving_timeout.tv_usec = 0;
+
+	while (1) {
+		err = false;
+
+		memset(&sa, 0, sizeof(struct sockaddr_in));
+		memset(&cliaddr, 0, sizeof(struct sockaddr_in));
+
+		sa.sin_family = AF_INET;
+		sa.sin_addr.s_addr = htonl(INADDR_ANY);
+		sa.sin_port = htons(UDPCHATPORT2);
+
+		socket_fd = socket(PF_INET, SOCK_DGRAM,0);
+		if (socket_fd < 0) {
+			printf("socket call failed\n");
+			err = true;
+		}
+		if (!err) {
+			if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT,&opt, sizeof(opt)))
+			{
+				perror("setsockopt");
+			}
+			if (bind(socket_fd, (struct sockaddr *) &sa, sizeof(sa)) == -1) {
+				perror("Bind to Port failed\n");
+				err = true;
+			}
+		}
+		if (!err) {
+			setsockopt(socket_fd, SOL_SOCKET, SO_RCVTIMEO, &receiving_timeout,sizeof(receiving_timeout));
+			int len = sizeof(cliaddr);
+			int n;
+
+			n = recvfrom(socket_fd,  (uint8_t *)&receiveData , sizeof(receiveData), MSG_WAITALL, ( struct sockaddr *) &cliaddr,  &len);
+
+			if ( n > 0) {
+				addr_size = sizeof(cliaddr);
+				stationID = (inet_lnaof (cliaddr.sin_addr) -100 ); // = low byte address
+
+				if ( stationID== 0) { // base floor
+					receiveDataBaseFloor = receiveData;
+					connectCntrBaseFloor++;
+				}
+				else {
+					receiveDataFirstFloor = receiveData;
+					connectCntrFirstFloor++;
+				}
+			}
+		}
+		close(socket_fd);
+	}
+
+	pThreadStatus->run = false;
 	pthread_exit(args);
 	return ( NULL);
 }
@@ -172,20 +282,30 @@ void* serverThread (void* args) {
 void startConnectionThreads( void){
 	pthread_t ID1;
 	pthread_t ID2;
+	pthread_t ID3;
+
 	int result;
 
-	result = pthread_create(&ID1, NULL, &clientThread, NULL);
+	result = pthread_create(&ID1, NULL, &UDPserverThread, NULL);
 	if (result == 0)
-		printf("ClientThread created successfully.\n");
+		printf("UDPserverThread created successfully.\n");
 	else {
-		printf("ClientThread not created.\n");
+		printf("UDPserverThread not created.\n");
 	}
-	result = pthread_create(&ID2, NULL, &serverThread, NULL);
-	if (result == 0)
-		printf("ServerThread created successfully.\n");
-	else {
-		printf("ServerThread not created.\n");
-	}
-}
 
+	result = pthread_create(&ID2, NULL, &UDPclientThread, NULL);
+	if (result == 0)
+		printf("UDPclientThread created successfully.\n");
+	else {
+		printf("UDPclientThread not created.\n");
+	}
+
+	result = pthread_create(&ID3, NULL, &UDPKeepAliveServerThread, NULL);
+	if (result == 0)
+		printf("UDPKeepAliveServerThread created successfully.\n");
+	else {
+		printf("UDPKeepAliveServerThread not created.\n");
+	}
+
+}
 

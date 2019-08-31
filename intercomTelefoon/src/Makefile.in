@@ -108,8 +108,7 @@ am_telefoon_OBJECTS = telefoon-main.$(OBJEXT) \
 	telefoon-audioReceiveThread.$(OBJEXT) \
 	telefoon-connections.$(OBJEXT) telefoon-updateThread.$(OBJEXT) \
 	telefoon-io.$(OBJEXT) telefoon-testThread.$(OBJEXT) \
-	telefoon-timerThread.$(OBJEXT) telefoon-ringThread.$(OBJEXT) \
-	telefoon-keys.$(OBJEXT)
+	telefoon-timerThread.$(OBJEXT) telefoon-keys.$(OBJEXT)
 telefoon_OBJECTS = $(am_telefoon_OBJECTS)
 telefoon_DEPENDENCIES =
 AM_V_P = $(am__v_P_@AM_V@)
@@ -275,7 +274,7 @@ SYSROOTPATH = /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sy
 SYSROOTLIB = $(SYSROOTPATH)/lib/arm-linux-gnueabihf
 SYSROOTUSERLIB = $(SYSROOTPATH)/lib/arm-linux-gnueabihf
 PROGNAME = telefoon
-telefoon_SOURCES = main.c videoThread.c audioTransmitThread.c audioReceiveThread.c connections.c updateThread.c io.c testThread.c timerThread.c ringThread.c keys.c
+telefoon_SOURCES = main.c videoThread.c audioTransmitThread.c audioReceiveThread.c connections.c updateThread.c io.c testThread.c timerThread.c keys.c
 telefoon_LDADD = -lpthread  -lgstreamer-1.0  -lglib-2.0 -lgobject-2.0 -lssl -lcrypto
 telefoon_CPPFLAGS = -I$(SYSROOTPATH)usr/include/gstreamer-1.0 -I$(SYSROOTPATH)usr/include/glib-2.0 -I$(SYSROOTPATH)usr/lib/glib-2.0/include
 all: all-am
@@ -370,7 +369,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/telefoon-io.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/telefoon-keys.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/telefoon-main.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/telefoon-ringThread.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/telefoon-testThread.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/telefoon-timerThread.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/telefoon-updateThread.Po@am__quote@
@@ -515,20 +513,6 @@ telefoon-timerThread.obj: timerThread.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='timerThread.c' object='telefoon-timerThread.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(telefoon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o telefoon-timerThread.obj `if test -f 'timerThread.c'; then $(CYGPATH_W) 'timerThread.c'; else $(CYGPATH_W) '$(srcdir)/timerThread.c'; fi`
-
-telefoon-ringThread.o: ringThread.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(telefoon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT telefoon-ringThread.o -MD -MP -MF $(DEPDIR)/telefoon-ringThread.Tpo -c -o telefoon-ringThread.o `test -f 'ringThread.c' || echo '$(srcdir)/'`ringThread.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/telefoon-ringThread.Tpo $(DEPDIR)/telefoon-ringThread.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='ringThread.c' object='telefoon-ringThread.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(telefoon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o telefoon-ringThread.o `test -f 'ringThread.c' || echo '$(srcdir)/'`ringThread.c
-
-telefoon-ringThread.obj: ringThread.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(telefoon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT telefoon-ringThread.obj -MD -MP -MF $(DEPDIR)/telefoon-ringThread.Tpo -c -o telefoon-ringThread.obj `if test -f 'ringThread.c'; then $(CYGPATH_W) 'ringThread.c'; else $(CYGPATH_W) '$(srcdir)/ringThread.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/telefoon-ringThread.Tpo $(DEPDIR)/telefoon-ringThread.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='ringThread.c' object='telefoon-ringThread.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(telefoon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o telefoon-ringThread.obj `if test -f 'ringThread.c'; then $(CYGPATH_W) 'ringThread.c'; else $(CYGPATH_W) '$(srcdir)/ringThread.c'; fi`
 
 telefoon-keys.o: keys.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(telefoon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT telefoon-keys.o -MD -MP -MF $(DEPDIR)/telefoon-keys.Tpo -c -o telefoon-keys.o `test -f 'keys.c' || echo '$(srcdir)/'`keys.c

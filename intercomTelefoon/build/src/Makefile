@@ -14,7 +14,7 @@
 
 
 
-VPATH = ../../src
+VPATH = /home/dig/nanoPiFire2A/repository/intercomTelephone/intercomTelefoon/src
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
     false; \
@@ -70,10 +70,10 @@ am__make_running_with_option = \
   test $$has_opt = yes
 am__make_dryrun = (target_option=n; $(am__make_running_with_option))
 am__make_keepgoing = (target_option=k; $(am__make_running_with_option))
-pkgdatadir = $(datadir)/telefoon
-pkgincludedir = $(includedir)/telefoon
-pkglibdir = $(libdir)/telefoon
-pkglibexecdir = $(libexecdir)/telefoon
+pkgdatadir = $(datadir)/intercomtelephone
+pkgincludedir = $(includedir)/intercomtelephone
+pkglibdir = $(libdir)/intercomtelephone
+pkglibexecdir = $(libexecdir)/intercomtelephone
 am__cd = CDPATH="$${ZSH_VERSION+.}$(PATH_SEPARATOR)" && cd
 install_sh_DATA = $(install_sh) -c -m 644
 install_sh_PROGRAM = $(install_sh) -c
@@ -108,8 +108,7 @@ am_telefoon_OBJECTS = telefoon-main.$(OBJEXT) \
 	telefoon-audioReceiveThread.$(OBJEXT) \
 	telefoon-connections.$(OBJEXT) telefoon-updateThread.$(OBJEXT) \
 	telefoon-io.$(OBJEXT) telefoon-testThread.$(OBJEXT) \
-	telefoon-timerThread.$(OBJEXT) telefoon-ringThread.$(OBJEXT) \
-	telefoon-keys.$(OBJEXT)
+	telefoon-timerThread.$(OBJEXT) telefoon-keys.$(OBJEXT)
 telefoon_OBJECTS = $(am_telefoon_OBJECTS)
 telefoon_DEPENDENCIES =
 AM_V_P = $(am__v_P_$(V))
@@ -172,19 +171,19 @@ ETAGS = etags
 CTAGS = ctags
 am__DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/depcomp
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-ACLOCAL = ${SHELL} /home/dig/nanoPiFire2A/eclipseWorkspace/repository/telefoon/intercomTelefoon/missing aclocal-1.15
+ACLOCAL = ${SHELL} /home/dig/nanoPiFire2A/repository/intercomTelephone/intercomTelefoon/missing aclocal-1.15
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 1
-AUTOCONF = ${SHELL} /home/dig/nanoPiFire2A/eclipseWorkspace/repository/telefoon/intercomTelefoon/missing autoconf
-AUTOHEADER = ${SHELL} /home/dig/nanoPiFire2A/eclipseWorkspace/repository/telefoon/intercomTelefoon/missing autoheader
-AUTOMAKE = ${SHELL} /home/dig/nanoPiFire2A/eclipseWorkspace/repository/telefoon/intercomTelefoon/missing automake-1.15
+AUTOCONF = ${SHELL} /home/dig/nanoPiFire2A/repository/intercomTelephone/intercomTelefoon/missing autoconf
+AUTOHEADER = ${SHELL} /home/dig/nanoPiFire2A/repository/intercomTelephone/intercomTelefoon/missing autoheader
+AUTOMAKE = ${SHELL} /home/dig/nanoPiFire2A/repository/intercomTelephone/intercomTelefoon/missing automake-1.15
 AWK = gawk
 CC = arm-none-linux-gnueabihf-gcc
 CCDEPMODE = depmode=gcc3
-CFLAGS =  -std=c11
+CFLAGS = -g -O2
 CPPFLAGS = 
 CYGPATH_W = echo
-DEFS = -DPACKAGE_NAME=\"telefoon\" -DPACKAGE_TARNAME=\"telefoon\" -DPACKAGE_VERSION=\"1.0\" -DPACKAGE_STRING=\"telefoon\ 1.0\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DPACKAGE=\"telefoon\" -DVERSION=\"1.0\"
+DEFS = -DPACKAGE_NAME=\"intercomTelephone\" -DPACKAGE_TARNAME=\"intercomtelephone\" -DPACKAGE_VERSION=\"1.0\" -DPACKAGE_STRING=\"intercomTelephone\ 1.0\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DPACKAGE=\"intercomtelephone\" -DVERSION=\"1.0\"
 DEPDIR = .deps
 ECHO_C = 
 ECHO_N = -n
@@ -199,14 +198,14 @@ LDFLAGS =
 LIBOBJS = 
 LIBS = 
 LTLIBOBJS = 
-MAKEINFO = ${SHELL} /home/dig/nanoPiFire2A/eclipseWorkspace/repository/telefoon/intercomTelefoon/missing makeinfo
+MAKEINFO = ${SHELL} /home/dig/nanoPiFire2A/repository/intercomTelephone/intercomTelefoon/missing makeinfo
 MKDIR_P = /bin/mkdir -p
 OBJEXT = o
-PACKAGE = telefoon
+PACKAGE = intercomtelephone
 PACKAGE_BUGREPORT = 
-PACKAGE_NAME = telefoon
-PACKAGE_STRING = telefoon 1.0
-PACKAGE_TARNAME = telefoon
+PACKAGE_NAME = intercomTelephone
+PACKAGE_STRING = intercomTelephone 1.0
+PACKAGE_TARNAME = intercomtelephone
 PACKAGE_URL = 
 PACKAGE_VERSION = 1.0
 PATH_SEPARATOR = :
@@ -214,10 +213,10 @@ SET_MAKE =
 SHELL = /bin/bash
 STRIP = arm-none-linux-gnueabihf-strip
 VERSION = 1.0
-abs_builddir = /home/dig/nanoPiFire2A/eclipseWorkspace/repository/telefoon/intercomTelefoon/build/src
-abs_srcdir = /home/dig/nanoPiFire2A/eclipseWorkspace/repository/telefoon/intercomTelefoon/build/../src
-abs_top_builddir = /home/dig/nanoPiFire2A/eclipseWorkspace/repository/telefoon/intercomTelefoon/build
-abs_top_srcdir = /home/dig/nanoPiFire2A/eclipseWorkspace/repository/telefoon/intercomTelefoon/build/..
+abs_builddir = /home/dig/nanoPiFire2A/repository/intercomTelephone/intercomTelefoon/build/src
+abs_srcdir = /home/dig/nanoPiFire2A/repository/intercomTelephone/intercomTelefoon/src
+abs_top_builddir = /home/dig/nanoPiFire2A/repository/intercomTelephone/intercomTelefoon/build
+abs_top_srcdir = /home/dig/nanoPiFire2A/repository/intercomTelephone/intercomTelefoon
 ac_ct_CC = 
 am__include = include
 am__leading_dot = .
@@ -244,7 +243,7 @@ host_vendor = none
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /home/dig/nanoPiFire2A/eclipseWorkspace/repository/telefoon/intercomTelefoon/install-sh
+install_sh = ${SHELL} /home/dig/nanoPiFire2A/repository/intercomTelephone/intercomTelefoon/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
@@ -259,7 +258,7 @@ psdir = ${docdir}
 runstatedir = ${localstatedir}/run
 sbindir = ${exec_prefix}/sbin
 sharedstatedir = ${prefix}/com
-srcdir = ../../src
+srcdir = /home/dig/nanoPiFire2A/repository/intercomTelephone/intercomTelefoon/src
 sysconfdir = ${prefix}/etc
 target = arm-none-linux-gnueabihf
 target_alias = 
@@ -268,14 +267,14 @@ target_os = linux-gnueabihf
 target_vendor = none
 top_build_prefix = ../
 top_builddir = ..
-top_srcdir = ../..
+top_srcdir = /home/dig/nanoPiFire2A/repository/intercomTelephone/intercomTelefoon
 LIBPATH = /opt/rootfs-s5p4418/lib/arm-linux-gnueabihf
 USERLIBPATH = /opt/rootfs-s5p4418/usr/lib/arm-linux-gnueabihf
 SYSROOTPATH = /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root/
 SYSROOTLIB = $(SYSROOTPATH)/lib/arm-linux-gnueabihf
 SYSROOTUSERLIB = $(SYSROOTPATH)/lib/arm-linux-gnueabihf
 PROGNAME = telefoon
-telefoon_SOURCES = main.c videoThread.c audioTransmitThread.c audioReceiveThread.c connections.c updateThread.c io.c testThread.c timerThread.c ringThread.c keys.c
+telefoon_SOURCES = main.c videoThread.c audioTransmitThread.c audioReceiveThread.c connections.c updateThread.c io.c testThread.c timerThread.c keys.c
 telefoon_LDADD = -lpthread  -lgstreamer-1.0  -lglib-2.0 -lgobject-2.0 -lssl -lcrypto
 telefoon_CPPFLAGS = -I$(SYSROOTPATH)usr/include/gstreamer-1.0 -I$(SYSROOTPATH)usr/include/glib-2.0 -I$(SYSROOTPATH)usr/lib/glib-2.0/include
 all: all-am
@@ -370,7 +369,6 @@ include ./$(DEPDIR)/telefoon-connections.Po
 include ./$(DEPDIR)/telefoon-io.Po
 include ./$(DEPDIR)/telefoon-keys.Po
 include ./$(DEPDIR)/telefoon-main.Po
-include ./$(DEPDIR)/telefoon-ringThread.Po
 include ./$(DEPDIR)/telefoon-testThread.Po
 include ./$(DEPDIR)/telefoon-timerThread.Po
 include ./$(DEPDIR)/telefoon-updateThread.Po
@@ -515,20 +513,6 @@ telefoon-timerThread.obj: timerThread.c
 #	$(AM_V_CC)source='timerThread.c' object='telefoon-timerThread.obj' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
 #	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(telefoon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o telefoon-timerThread.obj `if test -f 'timerThread.c'; then $(CYGPATH_W) 'timerThread.c'; else $(CYGPATH_W) '$(srcdir)/timerThread.c'; fi`
-
-telefoon-ringThread.o: ringThread.c
-	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(telefoon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT telefoon-ringThread.o -MD -MP -MF $(DEPDIR)/telefoon-ringThread.Tpo -c -o telefoon-ringThread.o `test -f 'ringThread.c' || echo '$(srcdir)/'`ringThread.c
-	$(AM_V_at)$(am__mv) $(DEPDIR)/telefoon-ringThread.Tpo $(DEPDIR)/telefoon-ringThread.Po
-#	$(AM_V_CC)source='ringThread.c' object='telefoon-ringThread.o' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
-#	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(telefoon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o telefoon-ringThread.o `test -f 'ringThread.c' || echo '$(srcdir)/'`ringThread.c
-
-telefoon-ringThread.obj: ringThread.c
-	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(telefoon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT telefoon-ringThread.obj -MD -MP -MF $(DEPDIR)/telefoon-ringThread.Tpo -c -o telefoon-ringThread.obj `if test -f 'ringThread.c'; then $(CYGPATH_W) 'ringThread.c'; else $(CYGPATH_W) '$(srcdir)/ringThread.c'; fi`
-	$(AM_V_at)$(am__mv) $(DEPDIR)/telefoon-ringThread.Tpo $(DEPDIR)/telefoon-ringThread.Po
-#	$(AM_V_CC)source='ringThread.c' object='telefoon-ringThread.obj' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
-#	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(telefoon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o telefoon-ringThread.obj `if test -f 'ringThread.c'; then $(CYGPATH_W) 'ringThread.c'; else $(CYGPATH_W) '$(srcdir)/ringThread.c'; fi`
 
 telefoon-keys.o: keys.c
 	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(telefoon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT telefoon-keys.o -MD -MP -MF $(DEPDIR)/telefoon-keys.Tpo -c -o telefoon-keys.o `test -f 'keys.c' || echo '$(srcdir)/'`keys.c

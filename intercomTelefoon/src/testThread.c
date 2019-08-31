@@ -84,7 +84,7 @@ void* testThread(void* args)
 	ringVolume = 0.01;
 
 	pThreadStatus->mustStop = false;
-	pThreadStatus->isRunning = true;
+	pThreadStatus->run = true;
 	videopipeline = NULL;
 	audiopipeline = NULL;
 
@@ -256,8 +256,6 @@ void* testThread(void* args)
 			g_printerr ("Unable to set the video pipeline to the playing state.\n");
 			stop= true;
 		}
-		backLightOn();
-
 
 		break;
 
@@ -277,13 +275,16 @@ void* testThread(void* args)
 		if ( audiopipeline  ) { // check audiopipeline
 			bus = gst_element_get_bus (audiopipeline);
 			msg = gst_bus_pop (bus);
+			gst_object_unref (bus);
 		}
 		if ( videopipeline  ) {
 			if ( msg == NULL) {  // test videopipeline if no troubles with audio
 				bus = gst_element_get_bus (videopipeline);
 				msg = gst_bus_pop (bus);
+				gst_object_unref (bus);
 			}
 		}
+
 		/* Parse message */
 
 		if (msg != NULL) {
@@ -330,7 +331,7 @@ void* testThread(void* args)
 		case TEST_ETH:
 			if ( oldCntr != connectCntrBaseFloor) {
 			//	if ( connectCntr1 == 5 ) {
-					sprintf(str, "connects: %d\n", connectCntrBaseFloor);
+					sprintf(str, " berichten:\n  %d\n", connectCntrBaseFloor);
 				//	sprintf(str, "Ethernet OK", connectCntr1);
 					gst_element_set_state (videopipeline, GST_STATE_NULL);
 					g_object_set (G_OBJECT (textoverlay), "text",str,NULL);
@@ -346,7 +347,6 @@ void* testThread(void* args)
 	}
 
 	printf("testThread stopped\n");
-	system("echo 0 > /dev/backlight-1wire"); // backlight off
 
 	if (audiopipeline) {
 		gst_element_set_state (audiopipeline, GST_STATE_NULL);
@@ -357,10 +357,10 @@ void* testThread(void* args)
 		gst_object_unref(videopipeline);
 	}
 
-	gst_object_unref (bus);
+
 //	gst_object_unref (caps);
 	ringVolume = oldringVolume;
-	pThreadStatus->isRunning = false;
+	pThreadStatus->run = false;
 	pthread_exit(args);
 	return ( NULL);
 }
@@ -368,7 +368,7 @@ void* testThread(void* args)
 
 void* testModeThread(void* args)
 {
-	bool stop;
+	bool stop= false;
 	test_t test = TEST_ETH;
 	int result;
 	volatile threadStatus_t testStatus =  * (threadStatus_t *) args; // to pass to actual test - thread
@@ -377,7 +377,7 @@ void* testModeThread(void* args)
 	threadStatus_t  * pThreadStatus = args;
 
 	pThreadStatus->mustStop = false;
-	pThreadStatus->isRunning = true;
+	pThreadStatus->run = true;
 
 	pthread_t testThreadID;
 
@@ -393,14 +393,14 @@ void* testModeThread(void* args)
 			printf("subtestThread not created.\n");
 			stop= true;
 		}
-		while (!testStatus.isRunning) // wait until task runs
+		while (!testStatus.run) // wait until task runs
 			usleep(1000);
 
-		while ( testStatus.isRunning){
+		while ( testStatus.run){
 			usleep(10000);
 			if (key (KEY_HANDSET)) {
 				testStatus.mustStop = true;
-				while ( testStatus.isRunning)
+				while ( testStatus.run)
 					usleep(1000);
 				test++;
 			}
@@ -409,14 +409,12 @@ void* testModeThread(void* args)
 //			test= TEST_SPKR;
 		if (( pThreadStatus->mustStop) || (test == TEST_END)){
 			testStatus.mustStop = true;
-			while ( testStatus.isRunning)
+			while ( testStatus.run)
 				usleep(1000);
 			stop = true;
 		}
 	}
-	pThreadStatus->isRunning = false;
+	pThreadStatus->run = false;
 	pthread_exit(args);
 	return ( NULL);
 }
-
-

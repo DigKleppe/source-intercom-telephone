@@ -19,7 +19,6 @@
 #include <pthread.h>
 #include <stdint.h>
 
-
 #include "io.h"
 
 //extern void clearLastError();
@@ -44,6 +43,7 @@ int writeValueToFile(char* fileName, char* buff) {
 	FILE *fp = fopen(fileName,"w");
 	if (fp == NULL) {
 		setLastError("Unable to open file %s\n",fileName);
+		printf("Unable to open file %s\n",fileName);
 		return -1;
 	} else {
 		fwrite ( buff, strlen(buff), 1, fp );
@@ -56,6 +56,8 @@ int writeValueToFile(char* fileName, char* buff) {
 int writeIntValueToFile(char* fileName, int value) {
 	char buff[50];
 	sprintf(buff, "%d", value);
+	writeValueToFile(fileName, buff); // not always ok in one time ???
+	usleep(10000);
 	return writeValueToFile(fileName, buff);
 }
 

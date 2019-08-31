@@ -7,8 +7,9 @@ SYSROOTUSERLIB=$(SYSROOTPATH)/lib/arm-linux-gnueabihf
 
 PROGNAME=telefoon
 
+
 bin_PROGRAMS=$(PROGNAME)
-telefoon_SOURCES= main.c videoThread.c audioTransmitThread.c audioReceiveThread.c connections.c updateThread.c io.c testThread.c timerThread.c ringThread.c keys.c
+telefoon_SOURCES= main.c videoThread.c audioTransmitThread.c audioReceiveThread.c connections.c updateThread.c io.c testThread.c timerThread.c keys.c
 telefoon_LDADD = -lpthread  -lgstreamer-1.0  -lglib-2.0 -lgobject-2.0 -lssl -lcrypto
 telefoon_CPPFLAGS=-I$(SYSROOTPATH)usr/include/gstreamer-1.0 -I$(SYSROOTPATH)usr/include/glib-2.0 -I$(SYSROOTPATH)usr/lib/glib-2.0/include
 
