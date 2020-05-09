@@ -10,6 +10,7 @@
 
 bool setAudioReceiveTask ( streamerTask_t task, int UDPport , int SoundCardNo);
 bool audioPipeLineIsStopped ( void);
+bool audioReceiverIsStopped ( void);
 streamerTask_t getAudioReceiveTask();
 
 #endif /* AUDIORECEIVETHREAD_H_ */

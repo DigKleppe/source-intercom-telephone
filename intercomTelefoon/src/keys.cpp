@@ -6,6 +6,8 @@
  */
 #include "telefoon.h"
 #include "io.h"
+#include "keys.h"
+
 #include <unistd.h>
 
 #define KEYSSAMPLEINTERVAL	5 //ms
@@ -16,6 +18,7 @@
 
 uint32_t keyRepeats = 0;	//bit set to repeat
 uint32_t keysRT = 0;
+int16_t keysThreadCntr;
 
 static uint32_t keyReadBits = 0;
 
@@ -62,6 +65,9 @@ static void keyProcess ( void ){
 		keyrepeatTimer = 0xFFFF;
 }
 
+
+#define testInterval  (20 * 1000 / KEYSSAMPLEINTERVAL)
+
 void* keysThread(void* args)
 {
 	int res;
@@ -69,9 +75,15 @@ void* keysThread(void* args)
 	uint32_t inputs;
 	uint32_t lastInputs;
 	uint32_t debounceCntr = DEBOUNCES;
+#ifdef SIM
+	int32_t testTimer = 0; //10 * 1000 / KEYSSAMPLEINTERVAL;
+	int presc = 1000/KEYSSAMPLEINTERVAL;
+#endif
 
 	while (1)  {
 		usleep(1000 * KEYSSAMPLEINTERVAL);
+		keysThreadCntr++;
+#ifndef SIM
 		inputs = getSwitches();
 		if (lastInputs == inputs){
 			if ( debounceCntr > 0 )
@@ -81,6 +93,28 @@ void* keysThread(void* args)
 		}
 		else
 			debounceCntr = DEBOUNCES;
+#else
+		presc--;
+		if (presc == 0){
+			presc = 1000/KEYSSAMPLEINTERVAL;
+			testTimer++;
+			switch (testTimer) {
+			case 10:
+				keysRT = KEY_P3;
+				break;
+			case 12:
+				keysRT = KEY_HANDSET; // horn off the hook
+				break;
+			case 17:
+				keysRT = 0; // horn on the hook
+				break;
+
+			case 35:
+				testTimer = 0;
+				break;
+			}
+		}
+#endif
 		lastInputs = inputs;
 		keyProcess();
 	}

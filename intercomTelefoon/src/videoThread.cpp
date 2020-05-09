@@ -40,6 +40,12 @@ static GstElement *jpegenc, *textoverlay; // used for testscreen
 static streamerTask_t actualTask;
 
 static char textBuffer[MESSAGEBUFFERSIZE];
+static int actualPort;
+
+int updateTextExceptionCntr;
+int setVideoExceptionCntr;
+int setVideoTextExceptionCntr;
+
 
 static void stopVideo (){
 	if (videopipeline != NULL ) {
@@ -51,35 +57,61 @@ static void stopVideo (){
 	}
 }
 
+GstStateChangeReturn setVideoPort( int UDPport) {
+	GstStateChangeReturn ret;
+	if ( UDPport == actualPort)
+		return 	GST_STATE_CHANGE_SUCCESS;
+	actualPort = UDPport;
+	print ("Video port changed to %d\n", UDPport);
+
+	gst_element_set_state (videopipeline, GST_STATE_NULL);
+	usleep(1000);
+	g_object_set (videoSource, "port", UDPport, NULL);
+	usleep(1000);
+	ret = gst_element_set_state (videopipeline, GST_STATE_PLAYING);
+	if (ret == GST_STATE_CHANGE_FAILURE) {
+		g_printerr ("Change port error.\n");
+	}
+	return ret;
+}
+
 
 bool  updateText ( char * pText) {
 	GstStateChangeReturn ret;
 	bool error = false;
-
-	if ( strcmp (pText, textBuffer) != 0 ){ // text changed ?
-		gst_element_set_state (videopipeline, GST_STATE_NULL); // stop
-		g_object_set (G_OBJECT (textoverlay), "text",pText,NULL);
-		ret = gst_element_set_state (videopipeline, GST_STATE_PLAYING);
-		if (ret == GST_STATE_CHANGE_FAILURE) {
-			g_printerr ("Unable to set the video pipeline to the playing state.\n");
-			error = true;
+	try {
+		if ( strcmp (pText, textBuffer) != 0 ){ // text changed ?
+			gst_element_set_state (videopipeline, GST_STATE_NULL); // stop
+			g_object_set (G_OBJECT (textoverlay), "text",pText,NULL);
+			ret = gst_element_set_state (videopipeline, GST_STATE_PLAYING);
+			if (ret == GST_STATE_CHANGE_FAILURE) {
+				g_printerr ("Unable to set the video pipeline to the playing state.\n");
+				error = true;
+			}
+			if ( strlen (pText ) < sizeof (textBuffer))
+				strcpy( textBuffer, pText);
+			else {
+				strncpy( textBuffer, pText, sizeof (textBuffer-1));
+				textBuffer[sizeof (textBuffer)-1] = 0;
+			}
 		}
-		if ( strlen (pText ) < sizeof (textBuffer))
-			strcpy( textBuffer, pText);
-		else {
-			strncpy( textBuffer, pText, sizeof (textBuffer-1));
-			textBuffer[sizeof (textBuffer)-1] = 0;
-		}
+	}
+	catch (int e)
+	{
+		g_printerr("An exception occurred. Exception Nr. %d\n\r",e);
+		updateTextExceptionCntr++;
+		exceptionCntr++;
 	}
 	return error;
 }
 
-	bool setVideoTask( streamerTask_t task, int UDPport, char * pText)
-	{
-		bool error = false;
+bool setVideoTask( streamerTask_t task, int UDPport, char * pText)
+{
+	bool error = false;
+	GstCaps *caps;
+	GstStateChangeReturn ret;
 
-		GstCaps *caps;
-		GstStateChangeReturn ret;
+	try {
 
 		switch (task){
 		case TASK_STOP:
@@ -137,6 +169,7 @@ bool  updateText ( char * pText) {
 
 		case VIDEOTASK_STREAM:
 			if (actualTask != VIDEOTASK_STREAM) { // do nothing if already showing
+				actualPort = UDPport;
 				stopVideo();
 				videopipeline = gst_pipeline_new ("videopipeline");
 				videoSource = gst_element_factory_make( "udpsrc","udpsrc");
@@ -198,70 +231,88 @@ bool  updateText ( char * pText) {
 				}
 			}
 			break;
+		default:
+			break;
 		}
 
-		actualTask = task;
-		return error;
 	}
-
-	bool videoIsStopped ( void) {
-
-		GstBus *bus;
-		GstMessage *msg;
-		bool stopped = false;
-		if ( videopipeline != NULL ){
-
-			bus = gst_element_get_bus (videopipeline);
-			msg = gst_bus_pop (bus );
-			gst_object_unref (bus);
-			/* Parse message */
-			if (msg != NULL) {
-				GError *err;
-				gchar *debug_info;
-
-				switch (GST_MESSAGE_TYPE (msg)) {
-				case GST_MESSAGE_ERROR:
-					gst_message_parse_error (msg, &err, &debug_info);
-					g_printerr ("Error received from element %s: %s\n", GST_OBJECT_NAME (msg->src), err->message);
-					g_printerr ("Debugging information: %s\n", debug_info ? debug_info : "none");
-					g_clear_error (&err);
-					g_free (debug_info);
-					stopped = true;
-					break;
-				case GST_MESSAGE_EOS:
-					g_print ("End-Of-Stream reached.\n");
-					stopped = true;
-					break;
-				default:
-					break;
-				}
-				gst_message_unref (msg);
-			}
-		}
-		else
-			stopped = true;
-		return stopped;
+	catch (int e)
+	{
+		g_printerr("An exception occurred. Exception Nr. %d\n\r",e);
+		setVideoExceptionCntr++;
+		exceptionCntr++;
 	}
+	actualTask = task;
+	return error;
+}
 
-	bool setVideoText ( char * newText) {
-		bool error = false;
-		GstStateChangeReturn ret;
-		if (actualTask == VIDEOTASK_SHOWMESSAGE ){
-			gst_element_set_state (videopipeline, GST_STATE_NULL);
-			g_object_set (G_OBJECT (textoverlay), "text",newText,NULL);
-			ret = gst_element_set_state (videopipeline, GST_STATE_PLAYING);
-			if (ret == GST_STATE_CHANGE_FAILURE) {
-				g_printerr ("Unable to set the video pipeline to the playing state.\n");
-				error = true;
+bool videoIsStopped ( void) {
+
+	GstBus *bus;
+	GstMessage *msg;
+	bool stopped = false;
+	if ( videopipeline != NULL ){
+
+		bus = gst_element_get_bus (videopipeline);
+		msg = gst_bus_pop (bus );
+		gst_object_unref (bus);
+		/* Parse message */
+		if (msg != NULL) {
+			GError *err;
+			gchar *debug_info;
+
+			switch (GST_MESSAGE_TYPE (msg)) {
+			case GST_MESSAGE_ERROR:
+				gst_message_parse_error (msg, &err, &debug_info);
+				g_printerr ("Error received from element %s: %s\n", GST_OBJECT_NAME (msg->src), err->message);
+				g_printerr ("Debugging information: %s\n", debug_info ? debug_info : "none");
+				g_clear_error (&err);
+				g_free (debug_info);
+				stopped = true;
+				break;
+			case GST_MESSAGE_EOS:
+				g_print ("End-Of-Stream reached.\n");
+				stopped = true;
+				break;
+			default:
+				break;
 			}
+			gst_message_unref (msg);
 		}
-		else
+	}
+	else
+		stopped = true;
+	return stopped;
+}
+
+bool setVideoText ( char * newText) {
+	bool error = false;
+	GstStateChangeReturn ret;
+	try {
+
+	if (actualTask == VIDEOTASK_SHOWMESSAGE ){
+		gst_element_set_state (videopipeline, GST_STATE_NULL);
+		g_object_set (G_OBJECT (textoverlay), "text",newText,NULL);
+		ret = gst_element_set_state (videopipeline, GST_STATE_PLAYING);
+		if (ret == GST_STATE_CHANGE_FAILURE) {
+			g_printerr ("Unable to set the video pipeline to the playing state.\n");
 			error = true;
-
-		return error;
+		}
+	}
+	else
+		error = true;
+	}
+	catch (int e)
+	{
+		g_printerr("An exception occurred. Exception Nr. %d\n\r",e);
+		setVideoTextExceptionCntr++;
+		exceptionCntr++;
 	}
 
-	streamerTask_t getVideoTask(){
-		return actualTask;
-	}
+	return error;
+}
+
+streamerTask_t getVideoTask(){
+	return actualTask;
+}
 

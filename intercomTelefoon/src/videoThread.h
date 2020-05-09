@@ -18,6 +18,7 @@ gboolean link_elements_with_filter (GstElement *element1, GstElement *element2, 
 
 
 bool setVideoTask( streamerTask_t task, int UDPport, char * pText);
+GstStateChangeReturn setVideoPort( int UDPport);
 streamerTask_t getVideoTask();
 bool setVideoText ( char * newText);
 bool videoIsStopped ( void);

@@ -74,7 +74,7 @@ void* testThread(void* args)
 	GstMessage *msg;
 	bool stop = false;
 	GstStateChangeReturn ret;
-	threadStatus_t  * pThreadStatus = args;
+	threadStatus_t  * pThreadStatus = (threadStatus_t  * )args;
 	test_t  * ptest =  (test_t *) pThreadStatus->info;
 	test_t test = *ptest;
 	char str[50];
@@ -369,12 +369,12 @@ void* testThread(void* args)
 void* testModeThread(void* args)
 {
 	bool stop= false;
-	test_t test = TEST_ETH;
+	int test = TEST_ETH;
 	int result;
 	volatile threadStatus_t testStatus =  * (threadStatus_t *) args; // to pass to actual test - thread
 	testStatus.info = &test; // set info to testno to exec
 
-	threadStatus_t  * pThreadStatus = args;
+	threadStatus_t  * pThreadStatus = (threadStatus_t  * ) args;
 
 	pThreadStatus->mustStop = false;
 	pThreadStatus->run = true;

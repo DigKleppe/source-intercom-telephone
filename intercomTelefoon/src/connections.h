@@ -10,9 +10,11 @@
 
 
 void startConnectionThreads( void);
-extern uint32_t connectCntrBaseFloor, connectCntrFirstFloor;  // connections to doorstations
-
+extern uint16_t connectCntrBaseFloor, connectCntrFirstFloor;  // connections to doorstations
+extern uint16_t connectCntrBaseFloor,connectCntrFirstFloor;
+extern uint16_t ackCntrBaseFloor,ackCntrFirstFloor;
 void UDPSend( floor_t);
 void UDPsendMessage (char * message );
+void UDPsendExtendedMessage (char * message );
 
 #endif /* CONNECTIONS_H_ */

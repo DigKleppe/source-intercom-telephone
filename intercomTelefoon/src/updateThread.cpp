@@ -49,7 +49,7 @@ unsigned long get_size_by_fd(int fd) {
 	return statbuf.st_size;
 }
 
-int getmd5(char * fileName) {
+int getmd5(const char * fileName) {
 	int file_descript;
 	unsigned long file_size;
 	char* file_buffer;
@@ -60,7 +60,7 @@ int getmd5(char * fileName) {
 	fileLen = get_size_by_fd(file_descript);
 	//	printf("file size:\t%lu\n", file_size);
 
-	file_buffer = mmap(0, fileLen, PROT_READ, MAP_SHARED, file_descript, 0);
+	file_buffer = (char * ) mmap(0, fileLen, PROT_READ, MAP_SHARED, file_descript, 0);
 	MD5((unsigned char*) file_buffer, fileLen, calculatedMd5sum);
 	munmap(file_buffer, fileLen);
 
@@ -125,7 +125,7 @@ void* updateServerThread (void* args) {
 	int socket_fd = 0, accept_fd = 0;
 	uint32_t addr_size, sent_data;
 	int count;
-	threadStatus_t  * pThreadStatus = args;
+	threadStatus_t * pThreadStatus =  (threadStatus_t *) args;
 	char receiveBuf[1024];
 	struct sockaddr_in sa, isa;
 	int stationID;

@@ -82,6 +82,10 @@ gst-launch-1.0 udpsrc port=5002 ! "application/x-rtp, media=(string)audio, clock
 #include <pthread.h>
 #include <unistd.h>
 
+int stopAudioReceiveExceptionCntr;
+int setAudioReceiveTaskExceptionCntr;
+int audioReceiverIsStoppedExceptionCntr;
+
 //#define SPKRVOLUME 0.3 volume by alsa
 // arm-cortexa9-linuxgnueabihf
 
@@ -127,14 +131,23 @@ static GstElement *audiopipeline = NULL;
 static GstElement *audioSource, *rtpL16depay, *audioconvert,*volume, * audiopanorama, * audioresample ,*audiosink;
 static GstElement *mpegaudioparser,* mpg123audiodec;
 
-streamerTask_t actualTask;
+static streamerTask_t actualTask;
 
 static bool stopAudioReceive() {
-	if (audiopipeline !=  NULL ) {
-		gst_element_set_state (audiopipeline, GST_STATE_NULL);
-		gst_object_unref(audiopipeline);
-		audiopipeline = NULL;
-		print("audio stopped\n");
+	try {
+
+		if (audiopipeline !=  NULL ) {
+			gst_element_set_state (audiopipeline, GST_STATE_NULL);
+			gst_object_unref(audiopipeline);
+			audiopipeline = NULL;
+			print("audio stopped\n");
+		}
+	}
+	catch (int e)
+	{
+		g_printerr("An exception occurred. Exception Nr. %d\n\r",e);
+		stopAudioReceiveExceptionCntr++;
+		exceptionCntr++;
 	}
 }
 
@@ -147,150 +160,163 @@ bool setAudioReceiveTask ( streamerTask_t task, int UDPport , int SoundCardNo) {
 
 	sprintf(devicename, "hw:%d",SoundCardNo);
 
-	switch (task ){
+	try {
 
-	case TASK_STOP:
-		stopAudioReceive();
-		break;
+		switch (task ){
 
-	case AUDIOTASK_RING:
-		if ( actualTask != AUDIOTASK_RING) {
+		case TASK_STOP:
 			stopAudioReceive();
-			audiopipeline = gst_pipeline_new ("audiopipeline");
-			audioSource = gst_element_factory_make ("filesrc", "filesrc");
-			g_object_set (G_OBJECT (audioSource), "location",(gchar *) ringTone,NULL);
-			mpegaudioparser = gst_element_factory_make ("mpegaudioparse", "mpegaudioparse");
-			mpg123audiodec = gst_element_factory_make ("mpg123audiodec", "mpg123audiodec");
+			break;
 
-			volume = gst_element_factory_make ("volume", "volume");
-			g_object_set (G_OBJECT (volume), "volume",ringVolume/10.0,NULL);
+		case AUDIOTASK_RING:
+			if ( actualTask != AUDIOTASK_RING) {
+				stopAudioReceive();
+				audiopipeline = gst_pipeline_new ("audiopipeline");
+				audioSource = gst_element_factory_make ("filesrc", "filesrc");
+				g_object_set (G_OBJECT (audioSource), "location",(gchar *) ringTone,NULL);
+				mpegaudioparser = gst_element_factory_make ("mpegaudioparse", "mpegaudioparse");
+				mpg123audiodec = gst_element_factory_make ("mpg123audiodec", "mpg123audiodec");
 
-			audioconvert = gst_element_factory_make ("audioconvert", "audioconvert");
-			audiosink = gst_element_factory_make ("alsasink", "alsasink");
+				volume = gst_element_factory_make ("volume", "volume");
+				g_object_set (G_OBJECT (volume), "volume",ringVolume/10.0,NULL);
 
-			audiopanorama = gst_element_factory_make ("audiopanorama", "audiopanorama");
-			g_object_set (audiopanorama,"panorama",SPEAKERCHANNEL,NULL);  // sound to speaker
+				audioconvert = gst_element_factory_make ("audioconvert", "audioconvert");
+				audiosink = gst_element_factory_make ("alsasink", "alsasink");
 
-			g_object_set (G_OBJECT (audiosink), "device",devicename,NULL);
+				audiopanorama = gst_element_factory_make ("audiopanorama", "audiopanorama");
+				g_object_set (audiopanorama,"panorama",SPEAKERCHANNEL,NULL);  // sound to speaker
 
-			if (!audiopipeline || !audioconvert || !volume || !audiosink) {
-				g_printerr ("Not all audio elements could be created.\n");
-				error = true;
-			}
-			if (!audioSource  || !mpegaudioparser || !mpg123audiodec ){
-				g_printerr ("Not all audio elements could be created.\n");
-				error = true;
-			}
+				g_object_set (G_OBJECT (audiosink), "device",devicename,NULL);
 
-			gst_bin_add_many (GST_BIN (audiopipeline), audioSource,mpegaudioparser,mpg123audiodec, volume, audioconvert,audiopanorama, audiosink ,NULL);
-
-			if (gst_element_link (audioSource, mpegaudioparser  ) != TRUE)
-				error = true;
-
-			if (gst_element_link (mpegaudioparser, mpg123audiodec ) != TRUE)
-				error = true;
-
-			if (gst_element_link (mpg123audiodec, volume) != TRUE)
-				error = true;
-
-			if (gst_element_link (volume, audioconvert) != TRUE)
-				error = true;
-
-			if (gst_element_link (audioconvert, audiopanorama  ) != TRUE)
-				error = true;
-
-			if (gst_element_link (audiopanorama, audiosink) != TRUE)
-				error = true;
-
-			if (!error) {
-				ret = gst_element_set_state (audiopipeline, GST_STATE_PLAYING);
-				if (ret == GST_STATE_CHANGE_FAILURE) {
-					g_printerr ("Rngtone:  Unable to set the audio pipeline to the playing state.\n");
+				if (!audiopipeline || !audioconvert || !volume || !audiosink) {
+					g_printerr ("Not all audio elements could be created.\n");
 					error = true;
 				}
-			}
-			if ( error)
-				print("ringThread error\n");
-			else {
-				print( "ring started\n");
-			}
-
-		}
-		break;
-
-
-	case AUDIOTASK_LISTEN:
-		if ( actualTask != AUDIOTASK_LISTEN) {
-			stopAudioReceive();
-			print("audio listen started port %d\n",UDPport);
-
-			audioSource = gst_element_factory_make ("udpsrc", "udpsrc");
-			g_object_set (audioSource, "port", UDPport, NULL);
-
-			rtpL16depay = gst_element_factory_make ("rtpL16depay", "rtpL16depay");
-
-			audioconvert = gst_element_factory_make ("audioconvert", "audioconvert");
-			audioresample = gst_element_factory_make ("audioresample", "audioresample");
-			audiopanorama = gst_element_factory_make ("audiopanorama", "audiopanorama");
-			g_object_set (audiopanorama,"panorama",HANDSETCHANNEL,NULL);  // sound to handset
-
-			volume = gst_element_factory_make ("volume", "volume");
-			g_object_set (volume,"volume",HANDSETVOLUME,NULL);
-
-			audiosink = gst_element_factory_make ("alsasink", "alsasink");
-			g_object_set (audiosink,"device",devicename,NULL);
-
-			if (!audioSource || !rtpL16depay ||!audioconvert || !audioresample || !audiopanorama || !audiosink || !volume) {
-				g_printerr ("Not all audio elements could be created.\n");
-				error = true;
-			}
-
-			audiopipeline = gst_pipeline_new ("receive audiopipeline");
-			gst_bin_add_many (GST_BIN (audiopipeline), audioSource, rtpL16depay,
-					audioconvert, audioresample, volume, audiopanorama, audiosink ,NULL);
-
-
-			caps = gst_caps_new_simple ("application/x-rtp",
-					"media", G_TYPE_STRING,"audio",
-					//	"clock-rate", G_TYPE_INT,24000, // logitec
-					"clock-rate", G_TYPE_INT,44100, // USB sound
-					"encoding-name",G_TYPE_STRING,"L16",
-					"encoding-params",(G_TYPE_STRING),"1",
-					"channels", G_TYPE_INT, 1,
-					"payload", G_TYPE_INT,96,
-					NULL);
-
-			if (link_elements_with_filter (audioSource, rtpL16depay, caps) != TRUE)
-				error = true;
-
-			if (gst_element_link (rtpL16depay, audioconvert  ) != TRUE)
-				error = true;
-
-			if (gst_element_link (audioconvert, audioresample  ) != TRUE)
-				error = true;
-
-			if (gst_element_link (audioresample, volume  ) != TRUE)
-				error = true;
-
-			if (gst_element_link (volume, audiopanorama  ) != TRUE)
-				error = true;
-
-			if (gst_element_link (audiopanorama, audiosink  ) != TRUE)
-				error = true;
-
-			usleep(10 * 1000);
-			if (error)
-				g_printerr ("Elements could not be linked.\n");
-			else {
-				ret = gst_element_set_state (audiopipeline, GST_STATE_PLAYING);
-				if (ret == GST_STATE_CHANGE_FAILURE) {
-					g_printerr (" audio Receive Unable to set the audio pipeline to the playing state.\n");
+				if (!audioSource  || !mpegaudioparser || !mpg123audiodec ){
+					g_printerr ("Not all audio elements could be created.\n");
 					error = true;
 				}
+
+				gst_bin_add_many (GST_BIN (audiopipeline), audioSource,mpegaudioparser,mpg123audiodec, volume, audioconvert,audiopanorama, audiosink ,NULL);
+
+				if (gst_element_link (audioSource, mpegaudioparser  ) != TRUE)
+					error = true;
+
+				if (gst_element_link (mpegaudioparser, mpg123audiodec ) != TRUE)
+					error = true;
+
+				if (gst_element_link (mpg123audiodec, volume) != TRUE)
+					error = true;
+
+				if (gst_element_link (volume, audioconvert) != TRUE)
+					error = true;
+
+				if (gst_element_link (audioconvert, audiopanorama  ) != TRUE)
+					error = true;
+
+				if (gst_element_link (audiopanorama, audiosink) != TRUE)
+					error = true;
+
+				if (!error) {
+					ret = gst_element_set_state (audiopipeline, GST_STATE_PLAYING);
+					if (ret == GST_STATE_CHANGE_FAILURE) {
+						g_printerr ("Rngtone:  Unable to set the audio pipeline to the playing state.\n");
+						error = true;
+					}
+				}
+				if ( error)
+					print("ringThread error\n");
+				else {
+					print( "ring started\n");
+				}
+
 			}
+			break;
+
+
+		case AUDIOTASK_LISTEN:
+			if ( actualTask != AUDIOTASK_LISTEN) {
+				stopAudioReceive();
+				print("audio listen started port %d\n",UDPport);
+
+				audioSource = gst_element_factory_make ("udpsrc", "udpsrc");
+				g_object_set (audioSource, "port", UDPport, NULL);
+
+				rtpL16depay = gst_element_factory_make ("rtpL16depay", "rtpL16depay");
+
+				audioconvert = gst_element_factory_make ("audioconvert", "audioconvert");
+				audioresample = gst_element_factory_make ("audioresample", "audioresample");
+				audiopanorama = gst_element_factory_make ("audiopanorama", "audiopanorama");
+				g_object_set (audiopanorama,"panorama",HANDSETCHANNEL,NULL);  // sound to handset
+
+				volume = gst_element_factory_make ("volume", "volume");
+				g_object_set (volume,"volume",HANDSETVOLUME,NULL);
+
+				audiosink = gst_element_factory_make ("alsasink", "alsasink");
+				g_object_set (audiosink,"device",devicename,NULL);
+
+				if (!audioSource || !rtpL16depay ||!audioconvert || !audioresample || !audiopanorama || !audiosink || !volume) {
+					g_printerr ("Not all audio elements could be created.\n");
+					error = true;
+				}
+
+				audiopipeline = gst_pipeline_new ("receive audiopipeline");
+				gst_bin_add_many (GST_BIN (audiopipeline), audioSource, rtpL16depay,
+						audioconvert, audioresample, volume, audiopanorama, audiosink ,NULL);
+
+
+				caps = gst_caps_new_simple ("application/x-rtp",
+						"media", G_TYPE_STRING,"audio",
+						//	"clock-rate", G_TYPE_INT,24000, // logitec
+						"clock-rate", G_TYPE_INT,44100, // USB sound
+						"encoding-name",G_TYPE_STRING,"L16",
+						"encoding-params",(G_TYPE_STRING),"1",
+						"channels", G_TYPE_INT, 1,
+						"payload", G_TYPE_INT,96,
+						NULL);
+
+				if (link_elements_with_filter (audioSource, rtpL16depay, caps) != TRUE)
+					error = true;
+
+				if (gst_element_link (rtpL16depay, audioconvert  ) != TRUE)
+					error = true;
+
+				if (gst_element_link (audioconvert, audioresample  ) != TRUE)
+					error = true;
+
+				if (gst_element_link (audioresample, volume  ) != TRUE)
+					error = true;
+
+				if (gst_element_link (volume, audiopanorama  ) != TRUE)
+					error = true;
+
+				if (gst_element_link (audiopanorama, audiosink  ) != TRUE)
+					error = true;
+
+				usleep(10 * 1000);
+				if (error)
+					g_printerr ("Elements could not be linked.\n");
+				else {
+					ret = gst_element_set_state (audiopipeline, GST_STATE_PLAYING);
+					if (ret == GST_STATE_CHANGE_FAILURE) {
+						g_printerr (" audio Receive Unable to set the audio pipeline to the playing state.\n");
+						error = true;
+					}
+				}
+			}
+			break;
+
+		default:
+			break;
 		}
-		break;
 	}
+	catch (int e)
+	{
+		g_printerr("An exception occurred. Exception Nr. %d\n\r",e);
+		setAudioReceiveTaskExceptionCntr++;
+		exceptionCntr++;
+	}
+
 	actualTask = task;
 	return error;
 }
@@ -301,36 +327,47 @@ bool audioReceiverIsStopped ( void) {
 	GstMessage *msg;
 	bool stopped = false;
 
-	if ( audiopipeline != NULL ){
-		bus = gst_element_get_bus (audiopipeline);
-		msg = gst_bus_pop (bus);
-		gst_object_unref (bus);
-		if (msg != NULL) {
-			GError *err;
-			gchar *debug_info;
-			switch (GST_MESSAGE_TYPE (msg)) {
-			case GST_MESSAGE_ERROR:
-				gst_message_parse_error (msg, &err, &debug_info);
-				g_printerr ("Error received from element %s: %s\n", GST_OBJECT_NAME (msg->src), err->message);
-				g_printerr ("Debugging information: %s\n", debug_info ? debug_info : "none");
-				g_clear_error (&err);
-				g_free (debug_info);
-				stopped = true;
-				break;
-			case GST_MESSAGE_EOS:
-				g_printf("End-Of-Stream reached.\n");
-				stopped = true;
-				//	gst_element_set_state (audiopipeline, GST_STATE_PLAYING); // start again
-				break;
-			default:
-				//	g_printerr ("Unexpected message received.\n");
-				break;
+	try{
+
+		if ( audiopipeline != NULL ){
+			bus = gst_element_get_bus (audiopipeline);
+			msg = gst_bus_pop (bus);
+			gst_object_unref (bus);
+			if (msg != NULL) {
+				GError *err;
+				gchar *debug_info;
+				switch (GST_MESSAGE_TYPE (msg)) {
+				case GST_MESSAGE_ERROR:
+					gst_message_parse_error (msg, &err, &debug_info);
+					g_printerr ("Error received from element %s: %s\n", GST_OBJECT_NAME (msg->src), err->message);
+					g_printerr ("Debugging information: %s\n", debug_info ? debug_info : "none");
+					g_clear_error (&err);
+					g_free (debug_info);
+					stopped = true;
+					break;
+				case GST_MESSAGE_EOS:
+					printf("End-Of-Stream reached.\n");
+					stopped = true;
+					//	gst_element_set_state (audiopipeline, GST_STATE_PLAYING); // start again
+					break;
+				default:
+					//	g_printerr ("Unexpected message received.\n");
+					break;
+				}
+				gst_message_unref (msg);
 			}
-			gst_message_unref (msg);
 		}
+		else
+			stopped = true;
 	}
-	else
-		stopped = true;
+
+	catch (int e)
+	{
+		g_printerr("An exception occurred. Exception Nr. %d\n\r",e);
+		audioReceiverIsStoppedExceptionCntr++;
+		exceptionCntr++;
+	}
+
 	return stopped;
 }
 
@@ -338,489 +375,3 @@ streamerTask_t getAudioReceiveTask() {
 	return actualTask;
 }
 
-//
-//	pThreadStatus->mustStop = false;
-//	pThreadStatus->run = true;
-//
-//	printf("audioRxthread started\n");
-//
-//	while(1) {
-//		switch (pThreadStatus->task){
-//		case AUDIOTASK_IDLE: // nothing to do , wait until task changes
-//			usleep(10000);
-//			break;
-//
-//		case AUDIOTASK_RING:
-//			pThreadStatus->mustStop = false;
-//			audiopipeline = gst_pipeline_new ("audiopipeline");
-//			audioSource = gst_element_factory_make ("filesrc", "filesrc");
-//			g_object_set (G_OBJECT (audioSource), "location",(gchar *) ringTone,NULL);
-//			mpegaudioparser = gst_element_factory_make ("mpegaudioparse", "mpegaudioparse");
-//			mpg123audiodec = gst_element_factory_make ("mpg123audiodec", "mpg123audiodec");
-//
-//			volume = gst_element_factory_make ("volume", "volume");
-//
-//			g_object_set (G_OBJECT (volume), "volume",ringVolume/10.0,NULL);
-//
-//			audioconvert = gst_element_factory_make ("audioconvert", "audioconvert");
-//
-//			audiosink = gst_element_factory_make ("alsasink", "alsasink");
-//			sprintf(devicename, "hw:%d",pThreadStatus->cardno);
-//			g_object_set (G_OBJECT (audiosink), "device",devicename,NULL);
-//
-//			if (!audiopipeline || !audioconvert || !volume || !audiosink) {
-//				g_printerr ("Not all audio elements could be created.\n");
-//				error = true;
-//			}
-//			if (!audioSource  || !mpegaudioparser || !mpg123audiodec ){
-//				g_printerr ("Not all audio elements could be created.\n");
-//				error = true;
-//			}
-//
-//			gst_bin_add_many (GST_BIN (audiopipeline), audioSource,mpegaudioparser,mpg123audiodec, volume, audioconvert, audiosink ,NULL);
-//
-//			if (gst_element_link (audioSource, mpegaudioparser  ) != TRUE)
-//				error = true;
-//
-//			if (gst_element_link (mpegaudioparser, mpg123audiodec ) != TRUE)
-//				error = true;
-//
-//			if (gst_element_link (mpg123audiodec, volume) != TRUE)
-//				error = true;
-//
-//			if (gst_element_link (volume, audioconvert) != TRUE)
-//				error = true;
-//
-//			if (gst_element_link (audioconvert, audiosink) != TRUE)
-//				error = true;
-//
-//			if (!error) {
-//				ret = gst_element_set_state (audiopipeline, GST_STATE_PLAYING);
-//				if (ret == GST_STATE_CHANGE_FAILURE) {
-//					g_printerr ("Rngtone:  Unable to set the audio pipeline to the playing state.\n");
-//					error = true;
-//				}
-//			}
-//			if ( error)
-//				printf("ringThread error\n");
-//			else {
-//				pThreadStatus->run = true;
-//				printf( "ring started\n");
-//			}
-//
-//			while(!error && (pThreadStatus->task == AUDIOTASK_RING)) {
-//				usleep(10 * 1000);
-//				msg = NULL;
-//				/* Wait until error or EOS */
-//				bus = gst_element_get_bus (audiopipeline);
-//
-//				msg = gst_bus_pop (bus);
-//				gst_object_unref (bus);
-//				if (msg != NULL) {
-//					GError *err;
-//					gchar *debug_info;
-//					switch (GST_MESSAGE_TYPE (msg)) {
-//					case GST_MESSAGE_ERROR:
-//						gst_message_parse_error (msg, &err, &debug_info);
-//						g_printerr ("Error received from element %s: %s\n", GST_OBJECT_NAME (msg->src), err->message);
-//						g_printerr ("Debugging information: %s\n", debug_info ? debug_info : "none");
-//						g_clear_error (&err);
-//						g_free (debug_info);
-//						error = true;
-//						break;
-//					case GST_MESSAGE_EOS:
-//						g_printf("End-Of-Stream reached.\n");
-//						error = true;
-//						//	gst_element_set_state (audiopipeline, GST_STATE_PLAYING); // start again
-//						break;
-//					default:
-//						//	g_printerr ("Unexpected message received.\n");
-//						break;
-//					}
-//					gst_message_unref (msg);
-//				}
-//			}
-//			gst_element_set_state (audiopipeline, GST_STATE_NULL);
-//			gst_object_unref(audiopipeline);
-//			pThreadStatus->task = AUDIOTASK_TALK;  // switch automatic to talk
-//			printf("ring ended\n");
-//			break;
-//
-//		case AUDIOTASK_TALK:
-//			error = false;
-//			pThreadStatus->mustStop = false;
-//
-//			print("audioRx talk started ");
-////			gst_element_set_state (audiopipeline, GST_STATE_NULL);
-//			gst_object_unref(audiopipeline);
-//			audioSource = gst_element_factory_make ("udpsrc", "udpsrc");
-//
-//			if (floorID == BASE_FLOOR) {
-//				g_object_set (audioSource, "port", AUDIO_RX_PORT1, NULL);
-//				print("base\n");
-//			}
-//			else {
-//				g_object_set (audioSource, "port", AUDIO_RX_PORT2, NULL);
-//				print("first\n");
-//			}
-//
-//			rtpL16depay = gst_element_factory_make ("rtpL16depay", "rtpL16depay");
-//
-//			audioconvert = gst_element_factory_make ("audioconvert", "audioconvert");
-//			audioresample = gst_element_factory_make ("audioresample", "audioresample");
-//			audiopanorama = gst_element_factory_make ("audiopanorama", "audiopanorama");
-//			g_object_set (audiopanorama,"panorama",HANDSETCHANNEL,NULL);  // sound to handset
-//
-//			volume = gst_element_factory_make ("volume", "volume");
-//			g_object_set (volume,"volume",HANDSETVOLUME,NULL);
-//
-//			audiosink = gst_element_factory_make ("alsasink", "alsasink");
-//			sprintf(devicename, "hw:%d",pThreadStatus->cardno);
-//			g_object_set (audiosink,"device",devicename,NULL);
-//
-//			if (!audioSource || !rtpL16depay ||!audioconvert || !audioresample || !audiopanorama || !audiosink || !volume) {
-//				g_printerr ("Not all audio elements could be created.\n");
-//				error = true;
-//			}
-//
-//			audiopipeline = gst_pipeline_new ("receive audiopipeline");
-//			gst_bin_add_many (GST_BIN (audiopipeline), audioSource, rtpL16depay,
-//					audioconvert, audioresample, volume, audiopanorama, audiosink ,NULL);
-//
-//
-//			caps = gst_caps_new_simple ("application/x-rtp",
-//					"media", G_TYPE_STRING,"audio",
-//				//	"clock-rate", G_TYPE_INT,24000, // logitec
-//					"clock-rate", G_TYPE_INT,44100, // USB sound
-//					"encoding-name",G_TYPE_STRING,"L16",
-//					"encoding-params",(G_TYPE_STRING),"1",
-//					"channels", G_TYPE_INT, 1,
-//					"payload", G_TYPE_INT,96,
-//					NULL);
-//
-//			if (link_elements_with_filter (audioSource, rtpL16depay, caps) != TRUE)
-//				error = true;
-//
-//			if (gst_element_link (rtpL16depay, audioconvert  ) != TRUE)
-//				error = true;
-//
-//			if (gst_element_link (audioconvert, audioresample  ) != TRUE)
-//				error = true;
-//
-//			if (gst_element_link (audioresample, volume  ) != TRUE)
-//					error = true;
-//
-//			if (gst_element_link (volume, audiopanorama  ) != TRUE)
-//				error = true;
-//
-//			if (gst_element_link (audiopanorama, audiosink  ) != TRUE)
-//				error = true;
-//
-//			usleep(10 * 1000);
-//			if (error)
-//				g_printerr ("Elements could not be linked.\n");
-//			else {
-//				ret = gst_element_set_state (audiopipeline, GST_STATE_PLAYING);
-//				if (ret == GST_STATE_CHANGE_FAILURE) {
-//					g_printerr (" audio Receive Unable to set the audio pipeline to the playing state.\n");
-//					error = true;
-//				}
-//			}
-//			pThreadStatus->run = true;
-//
-//			usleep(10 * 1000);
-//
-//		//	while(!pThreadStatus->mustStop  && !error && (pThreadStatus->task == AUDIOTASK_TALK)){
-//			while(!error && (pThreadStatus->task == AUDIOTASK_TALK)){
-//				usleep(10 * 1000);
-//				bus = gst_element_get_bus (audiopipeline);
-//				msg = gst_bus_pop(bus);
-//				gst_object_unref (bus);
-//				/* Parse message */
-//				if (msg != NULL) {
-//					GError *err;
-//					gchar *debug_info;
-//					switch (GST_MESSAGE_TYPE (msg)) {
-//					case GST_MESSAGE_ERROR:
-//						gst_message_parse_error (msg, &err, &debug_info);
-//						g_printerr ("Error received from element %s: %s\n", GST_OBJECT_NAME (msg->src), err->message);
-//						g_printerr ("Debugging information: %s\n", debug_info ? debug_info : "none");
-//						g_clear_error (&err);
-//						g_free (debug_info);
-//						error = true;
-//						break;
-//					case GST_MESSAGE_EOS:
-//						g_printf("End-Of-Stream reached.\n");
-//						error = true;
-//						break;
-//					default:
-//						/* We should not reach here because we only asked for ERRORs and EOS */
-//						//	g_printerr ("Unexpected message received.\n");
-//						break;
-//					}
-//					gst_message_unref (msg);
-//				}
-//			}
-//			printf("audioRx talk ended\n");
-//			gst_element_set_state (audiopipeline, GST_STATE_NULL);
-//			gst_object_unref(audiopipeline);
-//			if ( pThreadStatus->task == AUDIOTASK_TALK)
-//				pThreadStatus->task = AUDIOTASK_IDLE;  // go to idle
-//			pThreadStatus->run = false;
-//			break;
-//		}  // end switch
-//	}  // end  while (1);
-//}
-//
-
-
-
-
-
-//
-//
-//void* audioReceiveThread(void* args) {
-//	GstElement *audiopipeline,  *audioSource, *rtpL16depay, *audioconvert,*volume, * audiopanorama, * audioresample ,*audiosink;
-//	GstElement *mpegaudioparser,* mpg123audiodec;
-//	GstBus *bus = NULL;
-//	GstMessage *msg;
-//	GstCaps *caps = NULL;
-//	GstStateChangeReturn ret;
-//	threadStatus_t  * pThreadStatus = args;
-//	pThreadStatus->mustStop = false;
-//	pThreadStatus->run = true;
-//	char devicename[20];
-//	bool error = false;
-//
-//	pThreadStatus->mustStop = false;
-//	pThreadStatus->run = true;
-//
-//	printf("audioRxthread started\n");
-//
-//	while(1) {
-//		switch (pThreadStatus->task){
-//		case AUDIOTASK_IDLE: // nothing to do , wait until task changes
-//			usleep(10000);
-//			break;
-//
-//		case AUDIOTASK_RING:
-//			pThreadStatus->mustStop = false;
-//			audiopipeline = gst_pipeline_new ("audiopipeline");
-//			audioSource = gst_element_factory_make ("filesrc", "filesrc");
-//			g_object_set (G_OBJECT (audioSource), "location",(gchar *) ringTone,NULL);
-//			mpegaudioparser = gst_element_factory_make ("mpegaudioparse", "mpegaudioparse");
-//			mpg123audiodec = gst_element_factory_make ("mpg123audiodec", "mpg123audiodec");
-//
-//			volume = gst_element_factory_make ("volume", "volume");
-//
-//			g_object_set (G_OBJECT (volume), "volume",ringVolume/10.0,NULL);
-//
-//			audioconvert = gst_element_factory_make ("audioconvert", "audioconvert");
-//
-//			audiosink = gst_element_factory_make ("alsasink", "alsasink");
-//			sprintf(devicename, "hw:%d",pThreadStatus->cardno);
-//			g_object_set (G_OBJECT (audiosink), "device",devicename,NULL);
-//
-//			if (!audiopipeline || !audioconvert || !volume || !audiosink) {
-//				g_printerr ("Not all audio elements could be created.\n");
-//				error = true;
-//			}
-//			if (!audioSource  || !mpegaudioparser || !mpg123audiodec ){
-//				g_printerr ("Not all audio elements could be created.\n");
-//				error = true;
-//			}
-//
-//			gst_bin_add_many (GST_BIN (audiopipeline), audioSource,mpegaudioparser,mpg123audiodec, volume, audioconvert, audiosink ,NULL);
-//
-//			if (gst_element_link (audioSource, mpegaudioparser  ) != TRUE)
-//				error = true;
-//
-//			if (gst_element_link (mpegaudioparser, mpg123audiodec ) != TRUE)
-//				error = true;
-//
-//			if (gst_element_link (mpg123audiodec, volume) != TRUE)
-//				error = true;
-//
-//			if (gst_element_link (volume, audioconvert) != TRUE)
-//				error = true;
-//
-//			if (gst_element_link (audioconvert, audiosink) != TRUE)
-//				error = true;
-//
-//			if (!error) {
-//				ret = gst_element_set_state (audiopipeline, GST_STATE_PLAYING);
-//				if (ret == GST_STATE_CHANGE_FAILURE) {
-//					g_printerr ("Rngtone:  Unable to set the audio pipeline to the playing state.\n");
-//					error = true;
-//				}
-//			}
-//			if ( error)
-//				printf("ringThread error\n");
-//			else {
-//				pThreadStatus->run = true;
-//				printf( "ring started\n");
-//			}
-//
-//			while(!error && (pThreadStatus->task == AUDIOTASK_RING)) {
-//				usleep(10 * 1000);
-//				msg = NULL;
-//				/* Wait until error or EOS */
-//				bus = gst_element_get_bus (audiopipeline);
-//
-//				msg = gst_bus_pop (bus);
-//				gst_object_unref (bus);
-//				if (msg != NULL) {
-//					GError *err;
-//					gchar *debug_info;
-//					switch (GST_MESSAGE_TYPE (msg)) {
-//					case GST_MESSAGE_ERROR:
-//						gst_message_parse_error (msg, &err, &debug_info);
-//						g_printerr ("Error received from element %s: %s\n", GST_OBJECT_NAME (msg->src), err->message);
-//						g_printerr ("Debugging information: %s\n", debug_info ? debug_info : "none");
-//						g_clear_error (&err);
-//						g_free (debug_info);
-//						error = true;
-//						break;
-//					case GST_MESSAGE_EOS:
-//						g_printf("End-Of-Stream reached.\n");
-//						error = true;
-//						//	gst_element_set_state (audiopipeline, GST_STATE_PLAYING); // start again
-//						break;
-//					default:
-//						//	g_printerr ("Unexpected message received.\n");
-//						break;
-//					}
-//					gst_message_unref (msg);
-//				}
-//			}
-//			gst_element_set_state (audiopipeline, GST_STATE_NULL);
-//			gst_object_unref(audiopipeline);
-//			pThreadStatus->task = AUDIOTASK_TALK;  // switch automatic to talk
-//			printf("ring ended\n");
-//			break;
-//
-//		case AUDIOTASK_TALK:
-//			error = false;
-//			pThreadStatus->mustStop = false;
-//
-//			print("audioRx talk started ");
-//
-//			audioSource = gst_element_factory_make ("udpsrc", "udpsrc");
-//
-//			if (floorID == BASE_FLOOR) {
-//				g_object_set (audioSource, "port", AUDIO_RX_PORT1, NULL);
-//				print("base\n");
-//			}
-//			else {
-//				g_object_set (audioSource, "port", AUDIO_RX_PORT2, NULL);
-//				print("first\n");
-//			}
-//
-//			rtpL16depay = gst_element_factory_make ("rtpL16depay", "rtpL16depay");
-//
-//			audioconvert = gst_element_factory_make ("audioconvert", "audioconvert");
-//			audioresample = gst_element_factory_make ("audioresample", "audioresample");
-//			audiopanorama = gst_element_factory_make ("audiopanorama", "audiopanorama");
-//			g_object_set (audiopanorama,"panorama",HANDSETCHANNEL,NULL);  // sound to handset
-//
-//			volume = gst_element_factory_make ("volume", "volume");
-//			g_object_set (volume,"volume",HANDSETVOLUME,NULL);
-//
-//			audiosink = gst_element_factory_make ("alsasink", "alsasink");
-//			sprintf(devicename, "hw:%d",pThreadStatus->cardno);
-//			g_object_set (audiosink,"device",devicename,NULL);
-//
-//			if (!audioSource || !rtpL16depay ||!audioconvert || !audioresample || !audiopanorama || !audiosink || !volume) {
-//				g_printerr ("Not all audio elements could be created.\n");
-//				error = true;
-//			}
-//
-//			audiopipeline = gst_pipeline_new ("receive audiopipeline");
-//			gst_bin_add_many (GST_BIN (audiopipeline), audioSource, rtpL16depay,
-//					audioconvert, audioresample, volume, audiopanorama, audiosink ,NULL);
-//
-//
-//			caps = gst_caps_new_simple ("application/x-rtp",
-//					"media", G_TYPE_STRING,"audio",
-//				//	"clock-rate", G_TYPE_INT,24000, // logitec
-//					"clock-rate", G_TYPE_INT,44100, // USB sound
-//					"encoding-name",G_TYPE_STRING,"L16",
-//					"encoding-params",(G_TYPE_STRING),"1",
-//					"channels", G_TYPE_INT, 1,
-//					"payload", G_TYPE_INT,96,
-//					NULL);
-//
-//			if (link_elements_with_filter (audioSource, rtpL16depay, caps) != TRUE)
-//				error = true;
-//
-//			if (gst_element_link (rtpL16depay, audioconvert  ) != TRUE)
-//				error = true;
-//
-//			if (gst_element_link (audioconvert, audioresample  ) != TRUE)
-//				error = true;
-//
-//			if (gst_element_link (audioresample, volume  ) != TRUE)
-//					error = true;
-//
-//			if (gst_element_link (volume, audiopanorama  ) != TRUE)
-//				error = true;
-//
-//			if (gst_element_link (audiopanorama, audiosink  ) != TRUE)
-//				error = true;
-//
-//			usleep(10 * 1000);
-//			if (error)
-//				g_printerr ("Elements could not be linked.\n");
-//			else {
-//				ret = gst_element_set_state (audiopipeline, GST_STATE_PLAYING);
-//				if (ret == GST_STATE_CHANGE_FAILURE) {
-//					g_printerr (" audio Receive Unable to set the audio pipeline to the playing state.\n");
-//					error = true;
-//				}
-//			}
-//			pThreadStatus->run = true;
-//
-//			usleep(10 * 1000);
-//
-//		//	while(!pThreadStatus->mustStop  && !error && (pThreadStatus->task == AUDIOTASK_TALK)){
-//			while(!error && (pThreadStatus->task == AUDIOTASK_TALK)){
-//				usleep(10 * 1000);
-//				bus = gst_element_get_bus (audiopipeline);
-//				msg = gst_bus_pop(bus);
-//				gst_object_unref (bus);
-//				/* Parse message */
-//				if (msg != NULL) {
-//					GError *err;
-//					gchar *debug_info;
-//					switch (GST_MESSAGE_TYPE (msg)) {
-//					case GST_MESSAGE_ERROR:
-//						gst_message_parse_error (msg, &err, &debug_info);
-//						g_printerr ("Error received from element %s: %s\n", GST_OBJECT_NAME (msg->src), err->message);
-//						g_printerr ("Debugging information: %s\n", debug_info ? debug_info : "none");
-//						g_clear_error (&err);
-//						g_free (debug_info);
-//						error = true;
-//						break;
-//					case GST_MESSAGE_EOS:
-//						g_printf("End-Of-Stream reached.\n");
-//						error = true;
-//						break;
-//					default:
-//						/* We should not reach here because we only asked for ERRORs and EOS */
-//						//	g_printerr ("Unexpected message received.\n");
-//						break;
-//					}
-//					gst_message_unref (msg);
-//				}
-//			}
-//			printf("audioRx talk ended\n");
-//			gst_element_set_state (audiopipeline, GST_STATE_NULL);
-//			gst_object_unref(audiopipeline);
-//			if ( pThreadStatus->task == AUDIOTASK_TALK)
-//				pThreadStatus->task = AUDIOTASK_IDLE;  // go to idle
-//			pThreadStatus->run = false;
-//			break;
-//		}  // end switch
-//	}  // end  while (1);
-//}
-//

@@ -32,7 +32,8 @@
 
 void initIo();
 int getSwitches( void );
-int writeIntValueToFile(char* fileName, int value);
-int writeValueToFile(char* fileName, char* buff);
+int writeIntValueToFile(const char* fileName, int value);
+int writeValueToFile(const char* fileName, const char* buff);
+int readValueFromFile(const char* fileName, char* buff, int len);
 
 #endif /* IO_H_ */

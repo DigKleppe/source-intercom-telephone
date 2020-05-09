@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "io.h"
 
 extern status_t status;
 
@@ -16,10 +17,11 @@ volatile uint32_t overallTimeoutTimer = NOCOMM_TIMEOUT;
 volatile uint32_t updateTimeoutTimer = UPDATE_TIMEOUT;
 volatile uint32_t commandTimer;
 volatile uint32_t doorKeyTimer;
+volatile uint32_t upTime;
 
 #define MEMLOWERLIMIT (25 * 1000) // kB
 
-volatile uint32_t upTime, updateTimeoutTimer;
+
 void* timerThread(void* args) {
 	int presc = 10;
 
@@ -41,7 +43,7 @@ void* timerThread(void* args) {
 		if ( overallTimeoutTimer )
 			overallTimeoutTimer--;
 		else
-			exit(0);
+			exit(2);
 
 		 if (doorKeyTimer )
 			 doorKeyTimer--;
@@ -53,7 +55,7 @@ void* timerThread(void* args) {
 
 				if ( memFree < MEMLOWERLIMIT) {
 					if (status == STATUS_IDLE)
-						exit(EXIT_FAILURE);  // reboot thru calling script (Q&D)
+						exit(3);  // reboot thru calling script (Q&D)
 				}
 				if ( memStartFree == 0 )
 					memStartFree = memFree;

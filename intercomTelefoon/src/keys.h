@@ -25,5 +25,6 @@ void* keysThread(void* args);
 
 extern uint32_t keysRT;
 extern uint32_t keyRepeats;
+extern int16_t keysThreadCntr;
 
 #endif /* KEYS_H_ */

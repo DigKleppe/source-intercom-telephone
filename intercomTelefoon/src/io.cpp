@@ -24,10 +24,10 @@
 //extern void clearLastError();
 //extern void setLastError(const char *fmt, ...);
 
-int writeValueToFile(char* fileName, char* buff);
-int writeIntValueToFile(char* fileName, int value);
-int readValueFromFile(char* fileName, char* buff, int len);
-int readIntValueFromFile(char* fileName);
+//int writeValueToFile(char* fileName, char* buff);
+//int writeIntValueToFile(char* fileName, int value);
+//int readValueFromFile(char* fileName, char* buff, int len);
+//int readIntValueFromFile(char* fileName);
 
 //#define GPIO_FILENAME_DEFINE(pin,field) char fileName[255] = {0}; \
 //sprintf(fileName, "/sys/devices/virtual/gpio/gpio%d/%s", pin, field);
@@ -39,7 +39,7 @@ int readIntValueFromFile(char* fileName);
 #define setLastError printf
 
 
-int writeValueToFile(char* fileName, char* buff) {
+int writeValueToFile(const char* fileName, const char* buff) {
 	FILE *fp = fopen(fileName,"w");
 	if (fp == NULL) {
 		setLastError("Unable to open file %s\n",fileName);
@@ -53,7 +53,7 @@ int writeValueToFile(char* fileName, char* buff) {
 }
 
 
-int writeIntValueToFile(char* fileName, int value) {
+int writeIntValueToFile(const char* fileName, int value) {
 	char buff[50];
 	sprintf(buff, "%d", value);
 	writeValueToFile(fileName, buff); // not always ok in one time ???
@@ -62,14 +62,14 @@ int writeIntValueToFile(char* fileName, int value) {
 }
 
 
-int readValueFromFile(char* fileName, char* buff, int len) {
+int readValueFromFile(const char* fileName, char* buff, int len) {
 	int ret = -1;
 	FILE *fp = fopen(fileName,"r");
 	if (fp == NULL) {
 		setLastError("Unable to open file %s\n",fileName);
 		return -1;
 	} else {
-		if (fread(buff, sizeof(char), len, fp)>0) {
+		if (fread( (void *) buff, sizeof(char), len, fp)>0) {
 			ret = 0;
 		}
 	}
@@ -78,7 +78,7 @@ int readValueFromFile(char* fileName, char* buff, int len) {
 }
 
 
-int readIntValueFromFile(char* fileName) {
+int readIntValueFromFile(const char* fileName) {
 	char buff[255];
 	memset(buff, 0, sizeof(buff));
 	int ret = readValueFromFile(fileName, buff, sizeof(buff)-1);
