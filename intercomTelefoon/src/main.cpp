@@ -26,13 +26,14 @@
 #include <arpa/inet.h>
 #include <stdlib.h>
 
+
 // cmake eclipse: cmake-gui , build binaries in parellel build folder.
 // import project in build folder. From this folder build project.
 
 /* in root :
 ./configure \
    --host=arm-none-linux-gnueabihf\
-   PATH="/home/dig/nanoPiFire2A/tools/4.9.3/bin/:$PATH"
+   PATH="/mnt/linuxData/nanoPiFire2A/tools/4.9.3/bin/:$PATH"
  */
 /*
  ssh root@192.168.2.9
@@ -124,7 +125,9 @@ floor_t floorID = NO_FLOOR;
 uint32_t restarts;
 uint32_t timeouts;
 int lastExitCode;
+int lastActiveState;
 volatile int exitCode;
+uint32_t rings;
 
 int exceptionCntr;
 
@@ -193,7 +196,7 @@ void printDebug(void){  // send tot port 6003
 	if (--debugpresc == 0 ){
 		debugpresc= 10;
 		secToDay(upTime, buf);
-		print("%2d up: %s\t r:%u ex:%d to:%u le:%d\n", houseNo, buf, restarts,exceptionCntr, timeouts, lastExitCode);
+		print("%2d up: %s  \t rs:%u\trings:%d\tlas:%d to:%u \n", houseNo, buf, restarts,rings, lastActiveState, timeouts);
 	}
 
 	//	const int stations[] = {2,4,6,8,10,30,0 };
@@ -212,15 +215,15 @@ void printDebug(void){  // send tot port 6003
 
 void printExtendedDebug( void) { // send to port 6000+ houseNo
 
-	char buf[100];
-	int n;
-	n = sprintf ( buf, "%d\t",houseNo);
-	n += sprintf ( buf+n, "st:%d\tsst:%d\tast:%d\t",status,subStatus,activeState);
-	n += sprintf ( buf+n, "bl:%d\tks:%u\t", backLight, keysThreadCntr);
-	n += sprintf ( buf+n, "a1:%u\ta2:%u\t", ackCntrBaseFloor, ackCntrFirstFloor);
-	n +=sprintf ( buf+n, "e:%u\t", exceptionCntr);
-	n += sprintf ( buf+n,"\n");
-	UDPsendExtendedMessage(buf);
+//	char buf[100];
+//	int n;
+//	n = sprintf ( buf, "%d\t",houseNo);
+//	n += sprintf ( buf+n, "st:%d\tsst:%d\tast:%d\t",status,subStatus,activeState);
+//	n += sprintf ( buf+n, "bl:%d\tks:%u\t", backLight, keysThreadCntr);
+//	n += sprintf ( buf+n, "a1:%u\ta2:%u\t", ackCntrBaseFloor, ackCntrFirstFloor);
+//	n +=sprintf ( buf+n, "e:%u\t", exceptionCntr);
+//	n += sprintf ( buf+n,"\n");
+//	UDPsendExtendedMessage(buf);
 
 }
 
@@ -346,8 +349,6 @@ void loadSettings(){
 	return;
 }
 
-
-
 void saveState(int state, int floor ){
 	static int oldState;
 	static int oldloor;
@@ -370,17 +371,19 @@ void saveState(int state, int floor ){
 		print("Save File open Error !\n");
 		return;
 	}
-	fprintf( fptr,"Restarts_: %d\n", restarts);
+	fprintf( fptr,"Restarts__: %d\n", restarts);
 	fprintf( fptr,"timeouts: %d\n", timeouts);
 	fprintf( fptr,"lastexit: %d\n", lastExitCode);
 	fprintf( fptr,"state: %d\n", state);
 	fprintf( fptr,"floor: %d\n", floor);
+	fprintf( fptr,"rings: %d\n", rings);
 	fclose(fptr);
 	print ( "State %d saved %d\n", state, floor);
 	usleep( 10000);
 	system("sync");
 	return;
 }
+
 
 bool restoreState( int * state, int* floor ){
 	FILE *fptr;
@@ -399,9 +402,10 @@ bool restoreState( int * state, int* floor ){
 	do {
 		read = getline(&line, &len, fptr);
 		if ( read != -1) {
-			sscanf(line,"Restarts_: %d\n", &restarts);
+			sscanf(line,"Restarts__: %d\n", &restarts);
 			sscanf(line,"timeouts: %d\n", &timeouts);
 			sscanf(line,"lastexit: %d\n", &lastExitCode);
+			sscanf(line,"rings: %d\n", &rings);
 			sscanf(line,"state: %d\n",state);
 			sscanf(line,"floor: %d\n", floor);
 		}
@@ -409,6 +413,7 @@ bool restoreState( int * state, int* floor ){
 
 	free(line);
 	print( "restore state: %d\n",*state);
+	lastActiveState = *state;
 	fclose(fptr);
 	return false;
 }
@@ -443,6 +448,7 @@ int detectAudioCardNo(const char * cardName) {
 
 }
 //https://randu.org/tutorials/threads/
+
 
 int init(void) {
 
@@ -777,6 +783,8 @@ int main(int argc, char *argv[]) {
 				} // end if horn on the hook
 				if ((receiveDataBaseFloor.command == COMMAND_RING) || (receiveDataFirstFloor.command == COMMAND_RING)){
 					floor_t oldFloor = floorID;
+					rings++;
+					saveState(ACT_STATE_RINGING, floorID); // in case of reset..
 
 					if (receiveDataBaseFloor.command == COMMAND_RING) {
 						floorID = BASE_FLOOR;
@@ -800,7 +808,7 @@ int main(int argc, char *argv[]) {
 
 			case STATUS_RINGING1: // wait until ringcommand is acknowlegded
 				backLightOn();
-				saveState(ACT_STATE_RINGING, floorID); // in case of reset..
+
 				if (floorID == BASE_FLOOR ){
 					if (receiveDataBaseFloor.command == COMMAND_NONE)
 						status = STATUS_RINGING2;
@@ -824,6 +832,7 @@ int main(int argc, char *argv[]) {
 
 			case STATUS_RINGING2:  // wait until horn gets off
 				if (receiveDataBaseFloor.command == COMMAND_RING) {
+					rings++;
 					if( floorID == FIRST_FLOOR) { // then caller changed
 						floorID = BASE_FLOOR;
 						setVideoPort(VIDEOPORT1);
@@ -838,6 +847,7 @@ int main(int argc, char *argv[]) {
 					setAudioReceiveTask ( AUDIOTASK_RING, 0, speakerCardNo);
 				}
 				if (receiveDataFirstFloor.command == COMMAND_RING) {
+					rings++;
 					if( floorID == BASE_FLOOR) { // then caller changed
 						floorID = FIRST_FLOOR;
 						setVideoPort(VIDEOPORT2);
@@ -851,6 +861,7 @@ int main(int argc, char *argv[]) {
 					setAudioReceiveTask ( AUDIOTASK_RING, 0, speakerCardNo);
 				}
 				if (keysRT & KEY_HANDSET) { // then horn is off
+					saveState(ACT_STATE_TALKING, floorID); // in case of reset..
 					if( floorID == BASE_FLOOR) {
 						setAudioReceiveTask ( AUDIOTASK_LISTEN, AUDIO_RX_PORT1, speakerCardNo);
 						setAudioTransmitTask( AUDIOTASK_TALK, AUDIO_TX_PORT1 , speakerCardNo);
@@ -881,7 +892,7 @@ int main(int argc, char *argv[]) {
 
 				break;
 			case STATUS_TALKING:
-				saveState(ACT_STATE_TALKING, floorID); // in case of reset..
+
 
 				if (!(keysRT & KEY_HANDSET)) { // then horn is on again
 					status = STATUS_IDLE;

@@ -30,6 +30,7 @@ extern uint32_t ackBaseFloorTimer,ackFirstFloorTimer;
 
 void UDPsendMessage (char * message ) {
 	int sock = 0;
+	int opt = 1;
 	struct sockaddr_in serv_addr,cliaddr;
 
 	if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0)   // udp
@@ -39,7 +40,8 @@ void UDPsendMessage (char * message ) {
 
 		serv_addr.sin_family = AF_INET;
 		//	serv_addr.sin_addr.s_addr = INADDR_ANY;
-		inet_pton(AF_INET, "192.168.2.6", &serv_addr.sin_addr.s_addr);
+		inet_pton(AF_INET, "192.168.2.255", &serv_addr.sin_addr.s_addr);
+	    setsockopt(sock, SOL_SOCKET, SO_BROADCAST ,&opt, sizeof(opt));
 		serv_addr.sin_port = htons(MONITORTELEPHONESPORT);
 
 		sendto(sock, (uint8_t *) message, strlen(message), MSG_CONFIRM, (const struct sockaddr *) &serv_addr,
@@ -47,6 +49,7 @@ void UDPsendMessage (char * message ) {
 		close ( sock );
 	}
 }
+
 
 void UDPsendExtendedMessage (char * message ) {
 	int sock = 0;

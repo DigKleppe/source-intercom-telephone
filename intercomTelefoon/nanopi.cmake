@@ -1,7 +1,7 @@
 set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_SYSTEM_PROCESSOR arm)
 
-set(CMAKE_SYSROOT /home/dig/nanoPiFire2A/tools/4.9.3/arm-cortexa9-linux-gnueabihf/sys-root) 
+set(CMAKE_SYSROOT /mnt/LinuxData/nanoPiFire2A/sysroot) 
 set(CMAKE_STAGING_PREFIX /home/dig/devel/stage)
 
 set(tools /opt/FriendlyARM/toolchain/4.9.3/)
