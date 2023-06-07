@@ -15,7 +15,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define SOFTWAREVERSION 		38  // 2 = 0.2 10 = 1.0
+#define SOFTWAREVERSION 		37  // 2 = 0.2 10 = 1.0
 
 #define VIDEOPORT1				5000	// camera1 to display (begane grond)
 #define VIDEOPORT2				5001	// camera2 to display (eerste etage)

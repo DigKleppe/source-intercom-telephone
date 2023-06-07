@@ -6,7 +6,6 @@
 #include <stdbool.h>
 #include <string.h>
 
-
 #include "telefoon.h"
 #include "videoThread.h"
 #include "audioTransmit.h"
@@ -26,14 +25,13 @@
 #include <arpa/inet.h>
 #include <stdlib.h>
 
-
 // cmake eclipse: cmake-gui , build binaries in parellel build folder.
 // import project in build folder. From this folder build project.
 
 /* in root :
 ./configure \
    --host=arm-none-linux-gnueabihf\
-   PATH="/mnt/linuxData/nanoPiFire2A/tools/4.9.3/bin/:$PATH"
+   PATH="/home/dig/nanoPiFire2A/tools/4.9.3/bin/:$PATH"
  */
 /*
  ssh root@192.168.2.9
@@ -450,6 +448,7 @@ int detectAudioCardNo(const char * cardName) {
 //https://randu.org/tutorials/threads/
 
 
+
 int init(void) {
 
 	int result;
@@ -558,10 +557,17 @@ void handleDoorKey( floor_t floorID){
 	else
 		transmitData.keys = keysRT;
 }
+int result;
 
 int main(int argc, char *argv[]) {
 	writeIntValueToFile ("/dev/backlight-1wire", 0);
 	usleep( 1000);
+
+
+	while(1){
+		result++;
+	}
+
 
 	gst_init(&argc, &argv);
 	init();

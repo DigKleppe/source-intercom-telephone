@@ -36,7 +36,7 @@ gboolean link_elements_with_filter (GstElement *element1, GstElement *element2, 
 
 static GstElement *videopipeline = NULL;
 static GstElement *videoSource, *rtpjpegdepay,  *jpegdec ,*videoconvert , *videoflip,*videosink;
-static GstElement *jpegenc, *textoverlay; // used for testscreen
+static GstElement *textoverlay; // used for testscreen
 static streamerTask_t actualTask;
 
 static char textBuffer[MESSAGEBUFFERSIZE];
